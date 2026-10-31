@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
 
   const navItems = [
-    { name: "Dashboard", href: "/", icon: "📊" },
+    { name: "Dashboard", href: "/dashboard", icon: "📊" },
     { name: "Leads", href: "/leads", icon: "👥" },
     { name: "Call Logs", href: "/calls", icon: "📞" },
     { name: "Follow-ups", href: "/followups", icon: "📅" },
@@ -46,7 +49,17 @@ export default function Sidebar() {
       </div>
 
       <div className="text-xs text-zinc-500 p-2 border-t border-zinc-800">
-        Solvrex Caller Hub v1.0
+        <p>Solvrex Caller Hub v1.0</p>
+        <button
+          type="button"
+          onClick={async () => {
+            await logout();
+            router.replace("/");
+          }}
+          className="mt-3 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-white"
+        >
+          Log out
+        </button>
       </div>
     </aside>
   );
