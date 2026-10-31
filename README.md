@@ -1,5 +1,45 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Backend and database
+
+The backend uses Next.js App Router route handlers and Prisma 7 with PostgreSQL.
+Copy `.env.example` to `.env` and set `DATABASE_URL` to your local `solvrex_crm`
+database connection string. Keep `.env` local and do not commit credentials.
+
+The existing database tables are introspected; the app does not create or reset
+them. After configuring `DATABASE_URL`, run:
+
+```bash
+npm run db:pull
+npm run db:generate
+npm run db:seed
+npm run dev
+```
+
+To seed the initial Admin account, set `SEED_ADMIN_NAME`, `SEED_ADMIN_EMAIL`,
+and `SEED_ADMIN_PASSWORD` in your local `.env` before running `npm run db:seed`.
+The seed creates the account only when the email is unused and stores an
+Argon2id password hash.
+
+Test `GET http://localhost:3000/api/roles` in a browser or Postman to fetch roles
+from PostgreSQL.
+
+## Transactional email
+
+The server-side email service uses Resend. Set `RESEND_API_KEY` and
+`RESEND_FROM_EMAIL` in `.env` using a sender address verified with Resend. These
+variables are private and must not use a `NEXT_PUBLIC_` prefix.
+
+To send a development test message, pass the recipient address explicitly:
+
+```bash
+npm run email:test -- recipient@example.com
+```
+
+Email templates live in `templates/email/`; add new template identifiers and
+their required variables to the allowlist in `services/email.service.ts`.
+WhatsApp templates are kept separately in `templates/whatsapp/`.
+
 ## Getting Started
 
 First, run the development server:

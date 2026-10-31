@@ -68,7 +68,7 @@ export default function LeadsPage() {
             </div>
 
             {lead.notes && (
-              <p className="text-xs italic bg-zinc-950 p-2 rounded text-zinc-400 border border-zinc-800">"{lead.notes}"</p>
+              <p className="text-xs italic bg-zinc-950 p-2 rounded text-zinc-400 border border-zinc-800">&quot;{lead.notes}&quot;</p>
             )}
 
             <div className="flex gap-2 pt-2 border-t border-zinc-800">

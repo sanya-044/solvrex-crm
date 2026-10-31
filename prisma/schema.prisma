@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @unique @db.VarChar(30)
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id              BigInt        @id @default(autoincrement())
+  fullName        String        @map("full_name") @db.VarChar(100)
+  email           String        @unique @db.VarChar(255)
+  passwordHash    String        @map("password_hash")
+  roleId          BigInt        @map("role_id")
+  isActive        Boolean       @default(true) @map("is_active")
+  emailVerifiedAt DateTime?     @map("email_verified_at") @db.Timestamptz(6)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
+  sessions        UserSession[]
+  role            Role          @relation(fields: [roleId], references: [id], onUpdate: NoAction, map: "fk_users_role")
+
+  @@index([roleId], map: "idx_users_role_id")
+  @@map("users")
+}
+
+model UserSession {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_sessions_user")
+
+  @@index([expiresAt], map: "idx_sessions_expires_at")
+  @@index([userId], map: "idx_sessions_user_id")
+  @@map("user_sessions")
+}

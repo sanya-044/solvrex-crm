@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  outputFileTracingIncludes: {
+    "/*": ["./templates/email/*.html"],
+  },
   turbopack: {
     rules: {
       "*.css": {
