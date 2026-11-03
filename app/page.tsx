@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -170,6 +171,15 @@ export default function LoginPage() {
               >
                 {isPasswordVisible ? "Hide" : "Show"}
               </button>
+            </div>
+            <div className="mt-2 text-right">
+              <Link
+                href="/forgot-password"
+                onClick={() => setError(null)}
+                className="text-xs font-medium text-slate-300 transition hover:text-white"
+              >
+                Forgot Password?
+              </Link>
             </div>
           </div>
 

@@ -28,6 +28,7 @@ model User {
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
   sessions        UserSession[]
+  passwordResetTokens PasswordResetToken[]
   role            Role          @relation(fields: [roleId], references: [id], onUpdate: NoAction, map: "fk_users_role")
 
   @@index([roleId], map: "idx_users_role_id")
@@ -45,4 +46,20 @@ model UserSession {
   @@index([expiresAt], map: "idx_sessions_expires_at")
   @@index([userId], map: "idx_sessions_user_id")
   @@map("user_sessions")
+}
+
+model PasswordResetToken {
+  id        BigInt    @id @default(autoincrement())
+  userId    BigInt    @map("user_id")
+  email     String    @db.VarChar(255)
+  tokenHash String    @unique(map: "password_reset_tokens_token_hash_key") @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_password_reset_tokens_user")
+
+  @@index([userId], map: "idx_password_reset_tokens_user_id")
+  @@index([expiresAt], map: "idx_password_reset_tokens_expires_at")
+  @@map("password_reset_tokens")
 }
