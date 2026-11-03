@@ -63,8 +63,15 @@ export type SendEmailResult =
       };
     };
 
+export interface EmailRecipient {
+  email: string;
+  name?: string;
+}
+
+export type EmailRecipientInput = string | EmailRecipient;
+
 interface SendEmailInput<T extends EmailTemplateName> {
-  to: string | string[];
+  to: EmailRecipientInput | EmailRecipientInput[];
   subject: string;
   template: T;
   variables: EmailTemplateVariables[T];
@@ -217,10 +224,20 @@ export async function sendEmail<T extends EmailTemplateName>(
     recipients.length === 0 ||
     recipients.length > 50 ||
     recipients.some(
-      (recipient) =>
-        typeof recipient !== "string" ||
-        recipient.length > 254 ||
-        !recipientPattern.test(recipient.trim()),
+      (recipient) => {
+        const email =
+          typeof recipient === "string" ? recipient : recipient.email;
+        const name = typeof recipient === "string" ? undefined : recipient.name;
+        return (
+          typeof email !== "string" ||
+          email.length > 254 ||
+          !recipientPattern.test(email.trim()) ||
+          (name !== undefined &&
+            (typeof name !== "string" ||
+              !name.trim() ||
+              /[\r\n]/.test(name)))
+        );
+      },
     )
   ) {
     return failure("invalid_recipient", "Provide one or more valid recipient email addresses.");
@@ -252,7 +269,16 @@ export async function sendEmail<T extends EmailTemplateName>(
 
   try {
     const data = await deliverEmail({
-      to: recipients.map((recipient) => recipient.trim()),
+      to: recipients.map((recipient) => {
+        if (typeof recipient === "string") {
+          return recipient.trim();
+        }
+
+        const name = recipient.name?.trim();
+        return name
+          ? `"${name.replace(/["\\]/g, "\\$&")}" <${recipient.email.trim()}>`
+          : recipient.email.trim();
+      }),
       subject,
       html,
     });

@@ -27,8 +27,8 @@ from PostgreSQL.
 ## Transactional email
 
 The server-side email service uses Resend. Set `RESEND_API_KEY` and
-`RESEND_FROM_EMAIL` in `.env` using a sender address verified with Resend. These
-variables are private and must not use a `NEXT_PUBLIC_` prefix.
+`RESEND_FROM_EMAIL` in `.env` using a sender address verified with Resend. Keep
+these values private and do not add a `NEXT_PUBLIC_` prefix.
 
 To send a development test message, pass the recipient address explicitly:
 
@@ -39,6 +39,15 @@ npm run email:test -- recipient@example.com
 Email templates live in `templates/email/`; add new template identifiers and
 their required variables to the allowlist in `services/email.service.ts`.
 WhatsApp templates are kept separately in `templates/whatsapp/`.
+
+Password reset links use `APP_BASE_URL` to build their public URL. Set it to
+the application origin in each environment (for local development,
+`http://localhost:3000`; use the HTTPS application URL in production).
+
+The password reset schema change is additive. On the existing Neon database,
+the original schema baseline is recorded as already applied, then the
+`password_reset_tokens` migration is deployed. The baseline migration must not
+be run against the already populated database.
 
 ## Getting Started
 
