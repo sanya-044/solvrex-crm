@@ -22,9 +22,9 @@ export default function ProtectedCRMLayout({
 
   return (
     <CRMProvider>
-      <div className="flex h-screen bg-zinc-950 text-slate-100 overflow-hidden font-sans antialiased">
+      <div className="flex h-screen bg-[#080c14] text-slate-100 overflow-hidden font-sans antialiased">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-zinc-950/60 relative">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-[#080c14] relative">
           {children}
         </main>
       </div>
