@@ -20,23 +20,14 @@ export default function ProtectedCRMLayout({
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading || !isAuthenticated) {
-    return (
-      <main
-        className="flex min-h-screen items-center justify-center bg-zinc-950 text-sm text-zinc-400"
-        aria-busy="true"
-      >
-        Checking your session...
-      </main>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen">
-      <CRMProvider>
+    <CRMProvider>
+      <div className="flex h-screen bg-zinc-950 text-slate-100 overflow-hidden font-sans antialiased">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
-      </CRMProvider>
-    </div>
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-zinc-950/60 relative">
+          {children}
+        </main>
+      </div>
+    </CRMProvider>
   );
 }
