@@ -560,37 +560,35 @@ interface CRMContextType {
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export function CRMProvider({ children }: { children: ReactNode }) {
-  const [leads, setLeads] = useState<Lead[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("solvrex_crm_leads_v2");
-      return saved ? JSON.parse(saved) : initialLeads;
-    }
-    return initialLeads;
-  });
-
-  const [calls, setCalls] = useState<CallLog[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("solvrex_crm_calls_v2");
-      return saved ? JSON.parse(saved) : initialCalls;
-    }
-    return initialCalls;
-  });
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  const [calls, setCalls] = useState<CallLog[]>(initialCalls);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const [selectedCallerFilter, setSelectedCallerFilter] = useState<string>("All");
   const [userRole, setUserRole] = useState<"Admin" | "Caller">("Admin");
   const [activeCallerName, setActiveCallerName] = useState<string>("Priya Sharma");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("solvrex_crm_leads_v2", JSON.stringify(leads));
+    try {
+      const savedLeads = localStorage.getItem("solvrex_crm_leads_v2");
+      const savedCalls = localStorage.getItem("solvrex_crm_calls_v2");
+      if (savedLeads) setLeads(JSON.parse(savedLeads));
+      if (savedCalls) setCalls(JSON.parse(savedCalls));
+    } catch {
+      // Keep deterministic mock data when browser storage is unavailable or invalid.
     }
-  }, [leads]);
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("solvrex_crm_calls_v2", JSON.stringify(calls));
-    }
-  }, [calls]);
+    if (!isHydrated) return;
+    localStorage.setItem("solvrex_crm_leads_v2", JSON.stringify(leads));
+  }, [isHydrated, leads]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem("solvrex_crm_calls_v2", JSON.stringify(calls));
+  }, [isHydrated, calls]);
 
   const addLead = (lead: Omit<Lead, "id" | "totalCalls" | "createdAt">): Lead => {
     const newLead: Lead = {

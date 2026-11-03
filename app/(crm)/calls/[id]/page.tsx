@@ -157,10 +157,10 @@ export default function CallWorkspacePage({
     if (!lead) return text;
     return text
       .replace(/{contact_name}/g, lead.contactPerson || "Sir/Ma'am")
-      .replace(/{business_name}/g, lead.name)
-      .replace(/{caller_name}/g, activeCallerName)
-      .replace(/{city}/g, lead.city)
-      .replace(/{rating}/g, lead.googleRating.toString());
+      .replace(/{business_name}/g, lead.name || "Business")
+      .replace(/{caller_name}/g, activeCallerName || "Team Member")
+      .replace(/{city}/g, lead.city || "your city")
+      .replace(/{rating}/g, lead.googleRating == null ? "4.5" : String(lead.googleRating));
   };
 
   const handleCopyPhone = () => {

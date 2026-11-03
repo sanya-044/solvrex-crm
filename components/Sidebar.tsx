@@ -1,7 +1,23 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutGrid,
+  Users,
+  ShieldCheck,
+  CheckSquare,
+  PhoneCall,
+  Phone,
+  FileText,
+  BarChart2,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  UserCheck,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useCRM, CALLER_TEAM } from "@/context/CRMContent";
 
@@ -17,152 +33,255 @@ export default function Sidebar() {
     stats,
   } = useCRM();
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Use stable static values during SSR; update after mount to avoid hydration mismatch
+  const [followupCount, setFollowupCount] = useState<string>("12");
+  const [callsTodayBadge, setCallsTodayBadge] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Update dynamic badges only on the client after mount
+    if (stats.followupsDueToday.length > 0) {
+      setFollowupCount(`${stats.followupsDueToday.length}`);
+    }
+    if (stats.callsToday > 0) {
+      setCallsTodayBadge(`${stats.callsToday}`);
+    }
+  }, [stats.followupsDueToday.length, stats.callsToday]);
+
+  // Combined options from BOTH screenshots (common + individual)
   const navItems = [
     {
       name: "Dashboard",
       href: "/dashboard",
-      icon: "📊",
+      icon: LayoutGrid,
       badge: null,
     },
     {
-      name: "Leads Directory",
+      name: "Leads / Contacts",
       href: "/leads",
-      icon: "👥",
+      icon: Users,
       badge: null,
     },
     {
       name: "Active Call Hub",
       href: "/calls/1",
-      icon: "📞",
+      icon: Phone,
       badge: "Live Call",
-      badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+      badgeColor: "bg-[#10B981]/20 text-[#34D399] border-[#10B981]/30",
+    },
+    {
+      name: "Deals",
+      href: "/deals",
+      icon: ShieldCheck,
+      badge: "$145K",
+      badgeColor: "bg-[#2563EB]/20 text-[#60A5FA] border-[#2563EB]/30",
+    },
+    {
+      name: "Tasks & Follow-ups",
+      href: "/followups",
+      icon: CheckSquare,
+      badge: followupCount,
+      badgeColor: "bg-[#EF4444]/20 text-[#F87171] border-[#EF4444]/30",
     },
     {
       name: "Call Logs & Audio",
       href: "/calls",
-      icon: "🎧",
-      badge: stats.callsToday > 0 ? `${stats.callsToday} today` : null,
-      badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-    },
-    {
-      name: "Follow-ups Due",
-      href: "/followups",
-      icon: "📅",
-      badge: stats.followupsDueToday.length > 0 ? `${stats.followupsDueToday.length}` : null,
-      badgeColor: "bg-red-500/20 text-red-300 border-red-500/30",
+      icon: PhoneCall,
+      badge: callsTodayBadge,
+      badgeColor: "bg-[#06B6D4]/20 text-[#22D3EE] border-[#06B6D4]/30",
     },
     {
       name: "Templates & Scripts",
       href: "/templates",
-      icon: "💬",
+      icon: FileText,
       badge: "Hindi/Eng",
-      badgeColor: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+      badgeColor: "bg-[#38BDF8]/20 text-[#38BDF8] border-[#38BDF8]/30",
+    },
+    {
+      name: "Reports",
+      href: "/analytics",
+      icon: BarChart2,
+      badge: null,
+    },
+    {
+      name: "Users & Roles",
+      href: "/users",
+      icon: UserCheck,
+      badge: null,
+    },
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: Settings,
+      badge: null,
     },
   ];
 
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/");
+  };
+
+  const displayName =
+    userRole === "Caller"
+      ? activeCallerName
+      : user?.fullName || "Alex Morgan";
+
+  const displayRole =
+    userRole === "Caller"
+      ? "Calling Agent"
+      : user?.role || "VP of Enterprise Sales";
+
   return (
-    <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col justify-between shrink-0 select-none">
-      <div>
+    <aside
+      className={`h-screen bg-[#080C14] border-r border-[#151D2E] flex flex-col justify-between shrink-0 select-none transition-all duration-300 ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
+    >
+      <div className="flex flex-col flex-1 overflow-y-auto px-3 py-4 space-y-3">
         {/* Brand Header */}
-        <div className="p-4 border-b border-zinc-800/80">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center text-black font-black text-lg shadow-md shadow-amber-500/20">
-              S
-            </div>
-            <div>
-              <span className="text-base font-extrabold tracking-wide text-white block">
-                SOLVREX CRM
-              </span>
-              <span className="text-[11px] font-semibold text-amber-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                FollowUp Caller Hub
-              </span>
-            </div>
+        <div className="flex items-center gap-3 px-1">
+          <div className="w-10 h-10 rounded-xl bg-[#0D1524] border border-[#1E293B] flex items-center justify-center font-black text-sm text-white shrink-0 shadow-sm">
+            SX
           </div>
+          {!isCollapsed && (
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-white tracking-wide">
+                  SOLVREX
+                </span>
+                <span className="text-[9px] font-bold text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/30 rounded px-1.5 py-0.2">
+                  ENTERPRISE
+                </span>
+              </div>
+              <div className="flex items-center gap-1 leading-none mt-0.5">
+                <span className="text-xs font-black text-[#06B6D4]">CRM</span>
+              </div>
+              <p className="text-[10px] text-[#64748B] tracking-tight mt-0.5">
+                Intelligence Suite
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Interactive Role & Caller Switcher */}
-        <div className="m-3 p-3 rounded-xl bg-zinc-950/80 border border-zinc-800 space-y-2">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-zinc-400 font-medium">Active Workspace Role:</span>
-            <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                userRole === "Admin"
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                  : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-              }`}
-            >
-              {userRole}
-            </span>
-          </div>
+        {/* Role Switcher & Caller Selector from Screenshot 2 */}
+        {!isCollapsed && (
+          <div className="rounded-xl bg-[#0D1524] border border-[#1E293B] p-2.5 space-y-2">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-[#64748B] font-medium">Active Workspace Role:</span>
+              <span
+                className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  userRole === "Admin"
+                    ? "bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30"
+                    : "bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30"
+                }`}
+              >
+                {userRole}
+              </span>
+            </div>
 
-          <div className="grid grid-cols-2 gap-1.5 pt-1">
-            <button
-              type="button"
-              onClick={() => setUserRole("Admin")}
-              className={`py-1 text-xs font-semibold rounded transition ${
-                userRole === "Admin"
-                  ? "bg-amber-400 text-black shadow"
-                  : "bg-zinc-800 text-zinc-400 hover:text-white"
-              }`}
-            >
-              Admin View
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserRole("Caller")}
-              className={`py-1 text-xs font-semibold rounded transition ${
-                userRole === "Caller"
-                  ? "bg-emerald-400 text-black shadow"
-                  : "bg-zinc-800 text-zinc-400 hover:text-white"
-              }`}
-            >
-              Caller View
-            </button>
-          </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setUserRole("Admin")}
+                className={`py-1 text-xs font-semibold rounded-lg transition cursor-pointer ${
+                  userRole === "Admin"
+                    ? "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-black font-bold shadow-sm"
+                    : "bg-[#111A2E] text-[#94A3B8] hover:text-white"
+                }`}
+              >
+                Admin View
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserRole("Caller")}
+                className={`py-1 text-xs font-semibold rounded-lg transition cursor-pointer ${
+                  userRole === "Caller"
+                    ? "bg-gradient-to-r from-[#10B981] to-[#059669] text-black font-bold shadow-sm"
+                    : "bg-[#111A2E] text-[#94A3B8] hover:text-white"
+                }`}
+              >
+                Caller View
+              </button>
+            </div>
 
-          {/* Caller Profile Selection */}
-          <div className="pt-1.5 border-t border-zinc-800/80">
-            <label className="text-[10px] text-zinc-400 block mb-1">
-              {userRole === "Admin" ? "Simulate Caller:" : "Current Caller:"}
-            </label>
-            <select
-              value={activeCallerName}
-              onChange={(e) => setActiveCallerName(e.target.value)}
-              className="w-full text-xs bg-zinc-900 border border-zinc-700/80 rounded px-2 py-1 text-zinc-200 outline-none focus:border-amber-400"
-            >
-              {CALLER_TEAM.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name} ({c.role})
-                </option>
-              ))}
-            </select>
+            {/* Caller Profile Selection */}
+            <div className="pt-1.5 border-t border-[#1E293B]/70">
+              <label className="text-[10px] text-[#64748B] block mb-1">
+                {userRole === "Admin" ? "Simulate Caller:" : "Current Caller:"}
+              </label>
+              <select
+                value={activeCallerName}
+                onChange={(e) => setActiveCallerName(e.target.value)}
+                className="w-full text-xs bg-[#111A2E] border border-[#1E293B] rounded-lg px-2 py-1 text-white outline-none focus:border-[#06B6D4] cursor-pointer"
+              >
+                {CALLER_TEAM.map((c) => (
+                  <option key={c.id} value={c.name} className="bg-[#0D1524]">
+                    {c.name} ({c.role})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Section Title */}
+        {!isCollapsed && (
+          <p className="text-[10px] font-bold tracking-wider text-[#475569] uppercase px-2 pt-1">
+            CORE PLATFORM
+          </p>
+        )}
 
         {/* Navigation Items */}
-        <nav className="p-3 space-y-1">
+        <nav className="space-y-1">
           {navItems.map((item) => {
+            const Icon = item.icon;
+            const isDashboard = item.name === "Dashboard";
             const isActive =
-              pathname === item.href ||
-              (item.href === "/calls/1" && pathname.startsWith("/calls/"));
+              (isDashboard && pathname === "/dashboard") ||
+              (!isDashboard &&
+                (pathname === item.href ||
+                  (item.name === "Leads / Contacts" && (pathname === "/leads" || pathname === "/contacts")) ||
+                  (item.name === "Tasks & Follow-ups" && (pathname === "/followups" || pathname === "/tasks")) ||
+                  (item.name === "Reports" && (pathname === "/analytics" || pathname === "/reports")) ||
+                  (item.name === "Deals" && pathname === "/deals") ||
+                  (item.name === "Call Logs & Audio" && pathname === "/calls") ||
+                  (item.name === "Users & Roles" && pathname === "/users") ||
+                  (item.name === "Settings" && pathname === "/settings")));
+
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                title={isCollapsed ? item.name : undefined}
+                className={`relative flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all group ${
                   isActive
-                    ? "bg-amber-400/10 text-amber-300 border border-amber-500/30 shadow-sm"
-                    : "text-zinc-400 hover:bg-zinc-800/60 hover:text-white"
-                }`}
+                    ? "bg-gradient-to-r from-[#1D4ED8] via-[#2563EB]/85 to-[#1E40AF]/40 text-white font-semibold shadow-md shadow-blue-900/30"
+                    : "text-[#94A3B8] hover:bg-[#0E1524] hover:text-white"
+                } ${isCollapsed ? "justify-center px-0" : ""}`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-base">{item.icon}</span>
-                  <span>{item.name}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Cyan active bar on the very left */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#22D3EE] rounded-r shadow-[0_0_8px_#22D3EE]" />
+                  )}
+
+                  <Icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
+                      isActive ? "text-[#22D3EE]" : "text-[#94A3B8] group-hover:text-white"
+                    }`}
+                  />
+
+                  {!isCollapsed && (
+                    <span className="truncate">{item.name}</span>
+                  )}
                 </div>
-                {item.badge && (
+
+                {!isCollapsed && item.badge && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-full border ${item.badgeColor}`}
+                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded border shrink-0 ${
+                      item.badgeColor || "bg-[#1E293B] text-[#94A3B8] border-[#334155]"
+                    }`}
                   >
                     {item.badge}
                   </span>
@@ -173,34 +292,61 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* User Footer & Logout */}
-      <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/40">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-bold text-amber-300 border border-zinc-600">
-              {activeCallerName.charAt(0)}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-zinc-200 truncate">
-                {activeCallerName}
-              </p>
-              <p className="text-[10px] text-zinc-500 truncate">
-                {user?.email || "active@solvrex.com"}
-              </p>
-            </div>
-          </div>
-        </div>
-
+      {/* Bottom Controls & User Card */}
+      <div className="p-3 border-t border-[#151D2E] space-y-2.5">
+        {/* Collapse Sidebar Button */}
         <button
           type="button"
-          onClick={async () => {
-            await logout();
-            router.replace("/");
-          }}
-          className="w-full mt-1 rounded-lg px-2.5 py-1.5 text-center text-xs font-medium text-red-400 bg-red-950/20 border border-red-900/30 hover:bg-red-900/40 hover:text-red-200 transition"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`w-full flex items-center gap-1.5 rounded-xl border border-[#1E293B] bg-[#0E1524] p-2 text-xs font-medium text-[#94A3B8] hover:text-white hover:border-[#3B82F6]/50 transition cursor-pointer ${
+            isCollapsed ? "justify-center" : "px-3"
+          }`}
         >
-          Sign Out
+          {isCollapsed ? (
+            <ChevronRight className="h-3.5 w-3.5" />
+          ) : (
+            <>
+              <ChevronLeft className="h-3.5 w-3.5" />
+              <span>Collapse Sidebar</span>
+            </>
+          )}
         </button>
+
+        {/* User Card */}
+        <div
+          className={`flex items-center gap-2.5 rounded-xl border border-[#1E293B] bg-[#0E1524] p-2 ${
+            isCollapsed ? "justify-center" : "justify-between"
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#06B6D4] text-black font-extrabold text-xs shadow-sm">
+              {displayName.charAt(0)}
+              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-[#10B981] ring-1 ring-[#0E1524]" />
+            </div>
+
+            {!isCollapsed && (
+              <div className="min-w-0">
+                <p className="truncate text-xs font-bold text-white leading-tight">
+                  {displayName}
+                </p>
+                <p className="truncate text-[10px] text-[#64748B] leading-tight mt-0.5">
+                  {displayRole}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {!isCollapsed && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Sign out"
+              className="p-1 rounded text-[#64748B] hover:text-white hover:bg-[#1E293B] transition cursor-pointer"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   );
