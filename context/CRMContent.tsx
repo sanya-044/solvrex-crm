@@ -1,441 +1,884 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from "react";
-import { useAuth } from "@/context/AuthContext";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from "react";
 
-/* =====================================================================
-   Constants
-   ===================================================================== */
+export type PipelineStage =
+  | "Lead"
+  | "Contacted"
+  | "Proposal"
+  | "Negotiation"
+  | "Meeting Booked"
+  | "Won"
+  | "Lost";
 
-export const STAGES = ["New", "Contacted", "Interested", "Meeting", "Won", "Lost"] as const;
-export type Stage = (typeof STAGES)[number];
+export type CallOutcome =
+  | "Not answered"
+  | "Busy"
+  | "Call back"
+  | "Interested"
+  | "Not interested"
+  | "Wrong number"
+  | "Meeting booked"
+  | "Won";
 
-export const OUTCOMES = [
-  "Not answered",
-  "Busy",
-  "Call back",
-  "Interested",
-  "Not interested",
-  "Wrong number",
-  "Meeting booked",
-  "Won",
-] as const;
-
-/** Outcomes that do NOT count as a connected call ("No Answer" is the old mock value). */
-export const NOT_CONNECTED: readonly string[] = ["Not answered", "Busy", "Wrong number", "No Answer"];
-
-export const PRIORITIES = ["High", "Medium", "Low"] as const;
-export type Priority = (typeof PRIORITIES)[number];
-
-export type Role = "admin" | "manager" | "caller";
-export interface TeamUser {
-  name: string;
-  role: Role;
-}
-
-/** Assignable callers. Temporary list until a "list users" API exists; the logged-in user is always added. */
-export const TEAM: TeamUser[] = [
-  { name: "Raj", role: "admin" },
-  { name: "Shruti", role: "manager" },
-  { name: "Saurav", role: "caller" },
-  { name: "Priya", role: "caller" },
-];
-
-export const STAGE_STYLE: Record<Stage, string> = {
-  New: "bg-zinc-800 text-zinc-300 border-zinc-700",
-  Contacted: "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30",
-  Interested: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
-  Meeting: "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-500/15 dark:text-teal-300 dark:border-teal-500/30",
-  Won: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
-  Lost: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
-};
-
-export const STAGE_BAR: Record<Stage, string> = {
-  New: "bg-slate-400",
-  Contacted: "bg-sky-500",
-  Interested: "bg-amber-500",
-  Meeting: "bg-violet-500",
-  Won: "bg-emerald-500",
-  Lost: "bg-rose-500",
-};
-
-/* =====================================================================
-   Types
-   ===================================================================== */
+export type Priority = "High" | "Medium" | "Low";
 
 export interface Lead {
   id: string;
-  name: string; // business name
+  name: string; // Business name
   contactPerson: string;
   phone: string;
   email: string;
   city: string;
   category: string;
-  rating: number | null; // Google rating 0-5
-  website: string;
-  instagram: string;
+  googleRating: number;
+  googleReviewsCount: number;
+  websiteUrl: string;
+  instagramUrl: string;
   source: string;
-  stage: Stage; // single source of truth for lead progress
-  assignedTo: string; // TEAM member name, "" = unassigned
-  notes: string;
-  followUpDate: string; // YYYY-MM-DD or ""
-  followUpTime: string; // HH:MM or ""
-  priority: Priority;
-  /** Legacy mirrors of `stage`. Kept in sync automatically so Analytics and other old pages keep working. */
+  assignedCaller: string;
   status: string;
-  pipeline: string;
+  pipeline: PipelineStage;
+  priority: Priority;
+  notes: string;
+  followUpDate: string; // YYYY-MM-DD
+  followUpTime?: string; // HH:MM
+  lastCallOutcome?: CallOutcome | string;
+  totalCalls: number;
+  createdAt: string;
 }
-
-/** What callers pass when creating a lead. Everything except the business name is optional. */
-export type NewLead = Partial<Omit<Lead, "id" | "name" | "status" | "pipeline">> & { name: string };
 
 export interface CallLog {
   id: string;
+  leadId: string;
   leadName: string;
-  date: string; // display string, e.g. "2026-10-28 14:30"
-  outcome: string;
-  duration: string; // display string, e.g. "5m 12s"
+  callerName: string;
+  date: string; // ISO string or formatted
+  outcome: CallOutcome;
+  duration: string; // e.g. "02:45"
+  durationSeconds: number;
   notes: string;
-  // New optional fields (old saved calls don't have them)
-  leadId?: string;
-  caller?: string;
-  at?: string; // ISO timestamp - used for dashboard date ranges
-  durationSeconds?: number;
+  recordingUrl?: string;
+  nextFollowUp?: string;
+  priority?: Priority;
 }
 
-export type NewCall = Pick<CallLog, "leadName" | "outcome"> &
-  Partial<Omit<CallLog, "id" | "leadName" | "outcome">>;
-
-interface CRMContextType {
-  hydrated: boolean;
-  leads: Lead[];
-  calls: CallLog[];
-  /** Admin/Manager: everything. Caller: only their own leads/calls. */
-  visibleLeads: Lead[];
-  visibleCalls: CallLog[];
-  isManager: boolean;
-  team: TeamUser[];
-  currentUser: TeamUser;
-  addLead: (lead: NewLead) => void;
-  addLeads: (leads: NewLead[]) => void;
-  updateLead: (id: string, updated: Partial<Lead>) => void;
-  deleteLead: (id: string) => void;
-  addCallLog: (call: NewCall) => void;
+export interface MessageTemplate {
+  id: string;
+  title: string;
+  language: "English" | "Hindi";
+  channel: "WhatsApp" | "Email";
+  content: string;
 }
 
-/* =====================================================================
-   Helpers
-   ===================================================================== */
-
-export function uid(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+export interface ScriptSection {
+  id: string;
+  title: string;
+  language: "English" | "Hindi";
+  category: "Opening" | "Value Prop" | "Objection Handling" | "Closing";
+  script: string;
+  bullets?: string[];
 }
 
-export function toDateStr(d: Date): string {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
+export interface CallerMember {
+  id: string;
+  name: string;
+  email: string;
+  role: "Caller" | "Manager" | "Admin";
+  targetCallsPerDay: number;
 }
 
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${toDateStr(d)} ${hh}:${mm}`;
-}
+export const CALLER_TEAM: CallerMember[] = [
+  { id: "c1", name: "Priya Sharma", email: "priya@solvrex.com", role: "Caller", targetCallsPerDay: 50 },
+  { id: "c2", name: "Rahul Verma", email: "rahul@solvrex.com", role: "Manager", targetCallsPerDay: 40 },
+  { id: "c3", name: "Ankit Patel", email: "ankit@solvrex.com", role: "Caller", targetCallsPerDay: 45 },
+  { id: "c4", name: "Neha Gupta", email: "neha@solvrex.com", role: "Caller", targetCallsPerDay: 50 },
+];
 
-export function formatDuration(totalSeconds: number): string {
-  const s = Math.max(0, Math.round(totalSeconds));
-  const m = Math.floor(s / 60);
-  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
-}
+export const SAVED_TEMPLATES: MessageTemplate[] = [
+  {
+    id: "wa-en-intro",
+    title: "Intro Pitch & Portfolio (English)",
+    language: "English",
+    channel: "WhatsApp",
+    content:
+      "Hello {contact_name}! 👋\n\nThis is {caller_name} from Solvrex Solutions. We recently checked out {business_name} on Google and noticed high customer interest. We help premium businesses acquire 25-40% more inbound clients through custom automated lead funnels and local SEO.\n\nWould you be open to a quick 10-minute demo this Thursday? Here is a link to our recent client case studies: https://solvrex.com/cases\n\nBest regards,\n{caller_name}",
+  },
+  {
+    id: "wa-hi-intro",
+    title: "Intro & WhatsApp Portfolio (Hinglish)",
+    language: "Hindi",
+    channel: "WhatsApp",
+    content:
+      "नमस्ते {contact_name} जी! 🙏\n\nमैं {caller_name}, Solvrex Solutions से बात कर रहा हूँ। हमने {business_name} की Google प्रोफाइल देखी। आपका काम बहुत बढ़िया है!\n\nहम आपके जैसे प्रीमियम बिज़नेस के लिए Google और Social Media से रोज़ नए कस्टमर्स लाने में मदद करते हैं। क्या हम 10 मिनट के क्विक कॉल पर समझ सकते हैं कि यह आपके लिए कैसे काम करेगा?\n\nहमारा छोटा पोर्टफोलियो यहाँ देखें: https://solvrex.com/portfolio\n\nधन्यवाद,\n{caller_name}",
+  },
+  {
+    id: "wa-en-followup",
+    title: "Follow-up After Call (English)",
+    language: "English",
+    channel: "WhatsApp",
+    content:
+      "Hi {contact_name}, great speaking with you earlier regarding {business_name}! As discussed, I am sharing our solution overview and pricing plans. Please let me know if 3:00 PM tomorrow works for our calendar meeting.\n\nMeeting link: https://meet.google.com/abc-xyz\n\nThanks, {caller_name}",
+  },
+  {
+    id: "wa-hi-busy",
+    title: "Busy Callback Followup (Hindi)",
+    language: "Hindi",
+    channel: "WhatsApp",
+    content:
+      "नमस्ते {contact_name} जी, मैंने अभी आपको कॉल किया था पर आप व्यस्त लग रहे थे। कोई बात नहीं, मैंने {business_name} के लिए कुछ महत्वपूर्ण डिटेल्स इस मैसेज में छोड़ी हैं। जब भी आप फ्री हों, कृपया मुझे बताएं। हम फिर बात करेंगे! धन्यवाद - {caller_name}",
+  },
+  {
+    id: "email-proposal",
+    title: "Official Pitch & Proposal Deck (Email)",
+    language: "English",
+    channel: "Email",
+    content:
+      "Subject: Growth Strategy & Digital Systems for {business_name}\n\nHi {contact_name},\n\nIt was a pleasure reaching out. Following our brief conversation, I have put together a bespoke 4-step action plan for {business_name} to double your high-ticket client inquiries.\n\nAttached is our executive summary. Let me know when suits you best for a 15-minute walkthrough.\n\nWarm regards,\n{caller_name}\nSolvrex CRM Solutions",
+  },
+];
 
-/** Last 10 digits, so "+91 98100 22341" and "9810022341" count as the same number. */
-export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  return digits.length > 10 ? digits.slice(-10) : digits;
-}
-
-/** Time a call happened (ms). 0 if unknown. */
-export function callTime(c: CallLog): number {
-  if (c.at) {
-    const t = Date.parse(c.at);
-    if (!Number.isNaN(t)) return t;
-  }
-  const t = Date.parse(c.date.replace(" ", "T"));
-  return Number.isNaN(t) ? 0 : t;
-}
-
-/** Stage change that logically follows a call outcome. */
-export function stageAfterCall(outcome: string, current: Stage): Stage {
-  switch (outcome) {
-    case "Interested":
-      return "Interested";
-    case "Meeting booked":
-      return "Meeting";
-    case "Won":
-      return "Won";
-    case "Not interested":
-      return "Lost";
-    case "Not answered":
-    case "Busy":
-    case "Call back":
-      return current === "New" ? "Contacted" : current;
-    default:
-      return current;
-  }
-}
-
-/** Old 4-value "pipeline" that Analytics still reads, derived from the new stage. */
-export function pipelineForStage(stage: Stage): string {
-  switch (stage) {
-    case "Interested":
-      return "Proposal";
-    case "Meeting":
-      return "Negotiation";
-    case "Won":
-      return "Won";
-    case "Lost":
-      return "Lost";
-    default:
-      return "Lead";
-  }
-}
-
-function str(v: unknown): string {
-  return typeof v === "string" ? v : v == null ? "" : String(v);
-}
-
-/** Old records only had status + pipeline. Convert them to a single stage. */
-function legacyStage(status: string, pipeline: string): Stage {
-  if (pipeline === "Won") return "Won";
-  if (status === "Closed") return "Lost";
-  if (pipeline === "Negotiation") return "Meeting";
-  if (pipeline === "Proposal" || status === "Interested") return "Interested";
-  if (status === "Contacted") return "Contacted";
-  return "New";
-}
-
-/** Fills defaults and migrates old saved records so nothing is ever half-empty. */
-function normalizeLead(raw: Record<string, unknown>): Lead {
-  const rawStage = str(raw.stage);
-  const stage: Stage = (STAGES as readonly string[]).includes(rawStage)
-    ? (rawStage as Stage)
-    : legacyStage(str(raw.status), str(raw.pipeline));
-  const rawPriority = str(raw.priority);
-  const priority: Priority = (PRIORITIES as readonly string[]).includes(rawPriority)
-    ? (rawPriority as Priority)
-    : "Medium";
-  return {
-    id: str(raw.id) || uid(),
-    name: str(raw.name),
-    contactPerson: str(raw.contactPerson),
-    phone: str(raw.phone),
-    email: str(raw.email),
-    city: str(raw.city),
-    category: str(raw.category),
-    rating: typeof raw.rating === "number" && Number.isFinite(raw.rating) ? raw.rating : null,
-    website: str(raw.website),
-    instagram: str(raw.instagram),
-    source: str(raw.source),
-    stage,
-    assignedTo: str(raw.assignedTo),
-    notes: str(raw.notes),
-    followUpDate: str(raw.followUpDate),
-    followUpTime: str(raw.followUpTime),
-    priority,
-    status: stage,
-    pipeline: pipelineForStage(stage),
-  };
-}
-
-function normalizeCall(raw: Record<string, unknown>): CallLog {
-  const date = str(raw.date);
-  let at = str(raw.at);
-  if (!at) {
-    const t = Date.parse(date.replace(" ", "T"));
-    if (!Number.isNaN(t)) at = new Date(t).toISOString();
-  }
-  return {
-    id: str(raw.id) || uid(),
-    leadName: str(raw.leadName),
-    date,
-    outcome: str(raw.outcome),
-    duration: str(raw.duration),
-    notes: str(raw.notes),
-    leadId: str(raw.leadId) || undefined,
-    caller: str(raw.caller) || undefined,
-    at: at || undefined,
-    durationSeconds: typeof raw.durationSeconds === "number" ? raw.durationSeconds : undefined,
-  };
-}
-
-/* =====================================================================
-   Initial (demo) data - only used when nothing is saved yet
-   ===================================================================== */
+export const PITCH_SCRIPTS: ScriptSection[] = [
+  {
+    id: "s1",
+    title: "1. Confident Opening (Hook)",
+    language: "English",
+    category: "Opening",
+    script:
+      '"Hi {contact_name}, this is {caller_name} from Solvrex. I know you weren\'t expecting my call, so I\'ll be brief. I\'m calling specifically because I saw {business_name} in {city} has great Google ratings ({rating}★), and we\'ve been helping similar businesses generate 30+ qualified high-ticket leads each month. Did I catch you with 45 seconds to explain why?"',
+    bullets: [
+      "Keep tone relaxed, cheerful, and unhurried.",
+      "Acknowledge the interruption immediately to drop their guard.",
+      "Mention their actual Google rating and city.",
+    ],
+  },
+  {
+    id: "s2",
+    title: "1. ओपनिंग हुक (Hinglish / Hindi)",
+    language: "Hindi",
+    category: "Opening",
+    script:
+      '"नमस्ते {contact_name} जी, मैं {caller_name} बात कर रहा हूँ Solvrex Solutions से। मुझे पता है आप व्यस्त होंगे, इसलिए सिर्फ 1 मिनट लूँगा। मैंने देखा कि {city} में {business_name} की बहुत अच्छी रेटिंग ({rating}★) है। हम आपके जैसे प्रीमियम बिज़नेसेस को हर महीने 30-40 नए डायरेक्ट ग्राहक लाने में मदद करते हैं। क्या मैं 30 सेकंड में बता सकता हूँ कि कैसे?"',
+    bullets: [
+      "आदरपूर्वक बात करें ('जी' और 'आप' का प्रयोग करें)।",
+      "उनकी रेटिंग और शहर का नाम ज़रूर लें।",
+    ],
+  },
+  {
+    id: "s3",
+    title: "2. Value Proposition (Problem vs Solution)",
+    language: "English",
+    category: "Value Prop",
+    script:
+      '"Most businesses in your space lose up to 40% of incoming callers because there\'s no instant WhatsApp follow-up or smart callback system. We deploy a plug-and-play caller hub that ensures zero lost leads and books meetings directly into your calendar."',
+    bullets: [
+      "Focus on lost revenue from missed calls.",
+      "Highlight automated speed-to-lead.",
+    ],
+  },
+  {
+    id: "s4",
+    title: "3. Objection: 'Send details on WhatsApp'",
+    language: "English",
+    category: "Objection Handling",
+    script:
+      '"I\'d love to do that right away, {contact_name}! I have a customized 2-page PDF ready for {business_name}. So that I send only what\'s relevant—are you currently looking to expand your customer base this quarter, or are you at full capacity?"',
+    bullets: [
+      "Agree first (never argue).",
+      "Ask a qualifying question before sending.",
+    ],
+  },
+  {
+    id: "s5",
+    title: "3. आपत्ति: 'व्हाट्सएप पर डिटेल्स भेज दो'",
+    language: "Hindi",
+    category: "Objection Handling",
+    script:
+      '"बिल्कुल {contact_name} जी! मैं अभी इस नंबर पर ब्रोशर भेज देता हूँ। बस एक छोटा सवाल—अभी आप नए कस्टमर्स को टारगेट कर रहे हैं या आपकी कैपेसिटी फुल है? ताकि मैं बिल्कुल सटीक जानकारी भेज सकूँ।"',
+    bullets: ["तुरंत सहमति दें, फिर एक सवाल पूछकर बातचीत जारी रखें।"],
+  },
+  {
+    id: "s6",
+    title: "4. Objection: 'Already have an agency / vendor'",
+    language: "English",
+    category: "Objection Handling",
+    script:
+      '"That\'s fantastic! Most of our best clients were already working with someone when we first met. We don\'t ask you to replace them—we just show you where our automated follow-up tool adds 20-30% extra conversions on top of what you\'re already getting. What day works for a quick screen share?"',
+  },
+  {
+    id: "s7",
+    title: "5. Closing for Meeting Booked",
+    language: "English",
+    category: "Closing",
+    script:
+      '"I don\'t expect you to take my word for it today. How about a 10-minute live preview on Zoom/Google Meet? I have Thursday at 3 PM or Friday at 11 AM—which one works better for you?"',
+  },
+];
 
 const initialLeads: Lead[] = [
   {
-    id: "1", name: "Old Town Cafe", contactPerson: "Rohan Das", phone: "+91 9876543210", email: "contact@oldtown.com",
-    city: "Delhi", category: "Cafe", rating: 4.2, source: "Referral", stage: "New", assignedTo: "Saurav",
-    notes: "Interested in web redesign", followUpDate: "2026-11-02", followUpTime: "11:00", priority: "Medium",
+    id: "1",
+    name: "Old Town Cafe & Roastery",
+    contactPerson: "Rohan Das",
+    phone: "+91 98765 43210",
+    email: "rohan@oldtowncafe.in",
+    city: "Mumbai",
+    category: "Cafe & Restaurant",
+    googleRating: 4.7,
+    googleReviewsCount: 384,
+    websiteUrl: "https://oldtowncafe.example.com",
+    instagramUrl: "https://instagram.com/oldtowncafe",
+    source: "Google Maps",
+    assignedCaller: "Priya Sharma",
+    status: "Interested",
+    pipeline: "Proposal",
+    priority: "High",
+    notes: "Owner wants automated WhatsApp reservation reminders and weekend promo campaigns.",
+    followUpDate: "2026-11-03",
+    followUpTime: "11:30",
+    lastCallOutcome: "Interested",
+    totalCalls: 3,
+    createdAt: "2026-10-25",
   },
   {
-    id: "2", name: "Cafe De Arte", contactPerson: "Priya Singh", phone: "+91 9812345678", email: "info@cafedearte.in",
-    city: "Mumbai", category: "Cafe", rating: 4.5, instagram: "https://instagram.com/cafedearte", source: "Instagram",
-    stage: "Interested", assignedTo: "Priya", notes: "Sent proposal via email", followUpDate: "2026-10-30",
-    followUpTime: "15:00", priority: "High",
+    id: "2",
+    name: "Dr. Smile Dental Studio",
+    contactPerson: "Dr. Priya Sen",
+    phone: "+91 98123 45678",
+    email: "contact@drsmiledental.in",
+    city: "Delhi",
+    category: "Dental Clinic",
+    googleRating: 4.9,
+    googleReviewsCount: 520,
+    websiteUrl: "https://drsmiledental.example.com",
+    instagramUrl: "https://instagram.com/drsmiledental",
+    source: "Instagram",
+    assignedCaller: "Priya Sharma",
+    status: "Contacted",
+    pipeline: "Meeting Booked",
+    priority: "High",
+    notes: "Meeting confirmed for implant patient follow-up system walkthrough.",
+    followUpDate: "2026-11-03",
+    followUpTime: "14:00",
+    lastCallOutcome: "Meeting booked",
+    totalCalls: 2,
+    createdAt: "2026-10-28",
   },
   {
-    id: "3", name: "Grounded Cafe", contactPerson: "Amit Patel", phone: "+91 9988776655", email: "hello@grounded.com",
-    city: "Pune", category: "Cafe", rating: 4.4, website: "https://grounded.example", source: "Google Maps",
-    stage: "Won", assignedTo: "Raj", notes: "Contract signed!", followUpDate: "", followUpTime: "", priority: "Low",
+    id: "3",
+    name: "Skyline Luxury Estates",
+    contactPerson: "Amitabh Mehra",
+    phone: "+91 99887 76655",
+    email: "amitabh@skylineluxury.com",
+    city: "Bengaluru",
+    category: "Real Estate",
+    googleRating: 4.5,
+    googleReviewsCount: 195,
+    websiteUrl: "https://skylineluxury.example.com",
+    instagramUrl: "https://instagram.com/skylineluxury",
+    source: "Google Maps",
+    assignedCaller: "Rahul Verma",
+    status: "Negotiation",
+    pipeline: "Negotiation",
+    priority: "High",
+    notes: "Reviewing commercial proposal for 15-agent caller team license.",
+    followUpDate: "2026-11-04",
+    followUpTime: "16:00",
+    lastCallOutcome: "Interested",
+    totalCalls: 5,
+    createdAt: "2026-10-15",
   },
-].map((l) => normalizeLead(l));
+  {
+    id: "4",
+    name: "Grounded Wellness Spa & Gym",
+    contactPerson: "Aman Preet Singh",
+    phone: "+91 98450 11223",
+    email: "aman@groundedwellness.in",
+    city: "Pune",
+    category: "Gym & Fitness",
+    googleRating: 4.8,
+    googleReviewsCount: 410,
+    websiteUrl: "https://groundedwellness.example.com",
+    instagramUrl: "https://instagram.com/groundedwellness",
+    source: "Referral",
+    assignedCaller: "Ankit Patel",
+    status: "Won",
+    pipeline: "Won",
+    priority: "Medium",
+    notes: "Contract signed! Yearly plan activated for membership lead tracking.",
+    followUpDate: "",
+    lastCallOutcome: "Won",
+    totalCalls: 4,
+    createdAt: "2026-10-10",
+  },
+  {
+    id: "5",
+    name: "Artisan Woodcraft & Interiors",
+    contactPerson: "Kavita Rao",
+    phone: "+91 97654 32109",
+    email: "kavita@artisanwood.in",
+    city: "Bengaluru",
+    category: "Architecture & Decor",
+    googleRating: 4.6,
+    googleReviewsCount: 88,
+    websiteUrl: "https://artisanwood.example.com",
+    instagramUrl: "https://instagram.com/artisanwood",
+    source: "Instagram",
+    assignedCaller: "Priya Sharma",
+    status: "New",
+    pipeline: "Lead",
+    priority: "Medium",
+    notes: "High-ticket modular kitchen enquiries, needs call response within 5 mins.",
+    followUpDate: "2026-11-03",
+    followUpTime: "17:00",
+    lastCallOutcome: "Call back",
+    totalCalls: 1,
+    createdAt: "2026-11-01",
+  },
+  {
+    id: "6",
+    name: "Urban Bites Cloud Kitchen",
+    contactPerson: "Siddharth Verma",
+    phone: "+91 98111 22334",
+    email: "sid@urbanbites.in",
+    city: "Delhi",
+    category: "Cafe & Restaurant",
+    googleRating: 4.2,
+    googleReviewsCount: 65,
+    websiteUrl: "",
+    instagramUrl: "https://instagram.com/urbanbites",
+    source: "Google Maps",
+    assignedCaller: "Neha Gupta",
+    status: "Contacted",
+    pipeline: "Contacted",
+    priority: "Low",
+    notes: "Answered call, asked to send catalog on WhatsApp.",
+    followUpDate: "2026-11-05",
+    followUpTime: "12:00",
+    lastCallOutcome: "Interested",
+    totalCalls: 1,
+    createdAt: "2026-11-02",
+  },
+  {
+    id: "7",
+    name: "Krystal Eye Care & Laser Clinic",
+    contactPerson: "Dr. Rajesh Kulkarni",
+    phone: "+91 99223 34455",
+    email: "drrajesh@krystaleyecare.com",
+    city: "Pune",
+    category: "Dental Clinic",
+    googleRating: 4.9,
+    googleReviewsCount: 310,
+    websiteUrl: "https://krystaleye.example.com",
+    instagramUrl: "",
+    source: "Google Maps",
+    assignedCaller: "Priya Sharma",
+    status: "New",
+    pipeline: "Lead",
+    priority: "High",
+    notes: "Laser surgery patient enquiries need prompt scheduling.",
+    followUpDate: "2026-11-03",
+    followUpTime: "15:30",
+    lastCallOutcome: undefined,
+    totalCalls: 0,
+    createdAt: "2026-11-02",
+  },
+  {
+    id: "8",
+    name: "Zenith Prep Academy",
+    contactPerson: "Suman Joshi",
+    phone: "+91 98700 99887",
+    email: "admissions@zenithprep.in",
+    city: "Mumbai",
+    category: "Education",
+    googleRating: 4.4,
+    googleReviewsCount: 140,
+    websiteUrl: "https://zenithprep.example.com",
+    instagramUrl: "https://instagram.com/zenithprep",
+    source: "Inbound",
+    assignedCaller: "Rahul Verma",
+    status: "Contacted",
+    pipeline: "Proposal",
+    priority: "Medium",
+    notes: "Sent proposal for coaching admission hotline automation.",
+    followUpDate: "2026-11-06",
+    followUpTime: "11:00",
+    lastCallOutcome: "Interested",
+    totalCalls: 2,
+    createdAt: "2026-10-29",
+  },
+];
 
 const initialCalls: CallLog[] = [
-  { id: "c1", leadName: "Cafe De Arte", date: "2026-10-28 14:30", outcome: "Connected", duration: "5 mins", notes: "Discussed custom CRM features" },
-  { id: "c2", leadName: "Old Town Cafe", date: "2026-10-27 11:15", outcome: "No Answer", duration: "0 mins", notes: "Left voicemail" },
-].map((c) => normalizeCall(c));
+  {
+    id: "c1",
+    leadId: "1",
+    leadName: "Old Town Cafe & Roastery",
+    callerName: "Priya Sharma",
+    date: "2026-11-03 10:15",
+    outcome: "Interested",
+    duration: "03:42",
+    durationSeconds: 222,
+    notes: "Owner Rohan showed keen interest in automated WhatsApp booking system. Follow-up demo set.",
+    recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    nextFollowUp: "2026-11-03 11:30",
+    priority: "High",
+  },
+  {
+    id: "c2",
+    leadId: "2",
+    leadName: "Dr. Smile Dental Studio",
+    callerName: "Priya Sharma",
+    date: "2026-11-03 09:45",
+    outcome: "Meeting booked",
+    duration: "05:12",
+    durationSeconds: 312,
+    notes: "Meeting booked for Thursday Zoom demonstration with head dentist.",
+    recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    nextFollowUp: "2026-11-03 14:00",
+    priority: "High",
+  },
+  {
+    id: "c3",
+    leadId: "5",
+    leadName: "Artisan Woodcraft & Interiors",
+    callerName: "Priya Sharma",
+    date: "2026-11-02 16:20",
+    outcome: "Call back",
+    duration: "01:05",
+    durationSeconds: 65,
+    notes: "Was in a client site visit. Requested call back around 5 PM.",
+    recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    nextFollowUp: "2026-11-03 17:00",
+    priority: "Medium",
+  },
+  {
+    id: "c4",
+    leadId: "3",
+    leadName: "Skyline Luxury Estates",
+    callerName: "Rahul Verma",
+    date: "2026-11-02 14:10",
+    outcome: "Interested",
+    duration: "08:15",
+    durationSeconds: 495,
+    notes: "Negotiating pilot pricing for 10 sales agents.",
+    recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    nextFollowUp: "2026-11-04 16:00",
+    priority: "High",
+  },
+  {
+    id: "c5",
+    leadId: "4",
+    leadName: "Grounded Wellness Spa & Gym",
+    callerName: "Ankit Patel",
+    date: "2026-10-31 11:30",
+    outcome: "Won",
+    duration: "06:30",
+    durationSeconds: 390,
+    notes: "Closed deal! Paid advance for 12 months CRM subscription.",
+    recordingUrl: "",
+    priority: "Medium",
+  },
+  {
+    id: "c6",
+    leadId: "6",
+    leadName: "Urban Bites Cloud Kitchen",
+    callerName: "Neha Gupta",
+    date: "2026-11-01 15:40",
+    outcome: "Interested",
+    duration: "02:18",
+    durationSeconds: 138,
+    notes: "Requested quotation on WhatsApp.",
+    recordingUrl: "",
+    nextFollowUp: "2026-11-05 12:00",
+    priority: "Low",
+  },
+  {
+    id: "c7",
+    leadId: "8",
+    leadName: "Zenith Prep Academy",
+    callerName: "Rahul Verma",
+    date: "2026-10-30 12:05",
+    outcome: "Not answered",
+    duration: "00:30",
+    durationSeconds: 30,
+    notes: "Rang 5 times, no answer. Left automated callback trigger.",
+    recordingUrl: "",
+    priority: "Low",
+  },
+];
 
-const LEADS_KEY = "solvrex_crm_leads";
-const CALLS_KEY = "solvrex_crm_calls";
-
-/* =====================================================================
-   Provider
-   ===================================================================== */
+interface CRMContextType {
+  leads: Lead[];
+  calls: CallLog[];
+  selectedCallerFilter: string; // "All" or caller name
+  setSelectedCallerFilter: (caller: string) => void;
+  userRole: "Admin" | "Caller";
+  setUserRole: (role: "Admin" | "Caller") => void;
+  activeCallerName: string;
+  setActiveCallerName: (name: string) => void;
+  // Lead Operations
+  addLead: (lead: Omit<Lead, "id" | "totalCalls" | "createdAt">) => Lead;
+  updateLead: (id: string, updated: Partial<Lead>) => void;
+  deleteLead: (id: string) => void;
+  reassignLead: (id: string, newCaller: string) => void;
+  // Call Operations
+  addCallLog: (call: Omit<CallLog, "id">) => CallLog;
+  getLeadById: (id: string) => Lead | undefined;
+  getCallsForLead: (leadId: string) => CallLog[];
+  // CSV Operations
+  exportLeadsCSV: () => void;
+  importLeadsCSV: (csvText: string) => { added: number; errors: string[] };
+  // Stats
+  stats: {
+    callsToday: number;
+    callsThisWeek: number;
+    callsThisMonth: number;
+    connectRate: number;
+    conversionRate: number;
+    pipelineCount: Record<PipelineStage, number>;
+    followupsDueToday: Lead[];
+    callerLeaderboard: {
+      callerName: string;
+      callsMade: number;
+      connected: number;
+      meetingsBooked: number;
+      won: number;
+      connectRate: number;
+      conversionRate: number;
+    }[];
+  };
+}
 
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export function CRMProvider({ children }: { children: ReactNode }) {
-  const [leads, setLeads] = useState<Lead[]>(initialLeads);
-  const [calls, setCalls] = useState<CallLog[]>(initialCalls);
-  const { user } = useAuth();
-  const fullName = user?.fullName ?? "";
-  const rawRole = user?.role ?? "";
-  const currentUser = useMemo<TeamUser>(() => {
-    const r = rawRole.toLowerCase();
-    const role: Role = r.includes("admin") ? "admin" : r.includes("manager") ? "manager" : "caller";
-    return { name: fullName || "User", role };
-  }, [fullName, rawRole]);
-  const team = useMemo<TeamUser[]>(() => {
-    const names = [currentUser.name, ...TEAM.map((t) => t.name)].filter((n, i, a) => a.indexOf(n) === i);
-    return names.map((name) => ({
-      name,
-      role: name === currentUser.name ? currentUser.role : (TEAM.find((t) => t.name === name)?.role ?? "caller"),
-    }));
-  }, [currentUser]);
-  const [hydrated, setHydrated] = useState(false);
-
-  // Load saved data once, after the first render (avoids server/browser mismatch).
-  useEffect(() => {
-    try {
-      const savedLeads = localStorage.getItem(LEADS_KEY);
-      if (savedLeads) {
-        const parsed: unknown = JSON.parse(savedLeads);
-        if (Array.isArray(parsed)) setLeads(parsed.map((l) => normalizeLead(l as Record<string, unknown>)));
-      }
-      const savedCalls = localStorage.getItem(CALLS_KEY);
-      if (savedCalls) {
-        const parsed: unknown = JSON.parse(savedCalls);
-        if (Array.isArray(parsed)) setCalls(parsed.map((c) => normalizeCall(c as Record<string, unknown>)));
-      }
-    } catch {
-      // Corrupted saved data: keep the demo data instead of crashing.
+  const [leads, setLeads] = useState<Lead[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("solvrex_crm_leads_v2");
+      return saved ? JSON.parse(saved) : initialLeads;
     }
-    setHydrated(true);
-  }, []);
+    return initialLeads;
+  });
+
+  const [calls, setCalls] = useState<CallLog[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("solvrex_crm_calls_v2");
+      return saved ? JSON.parse(saved) : initialCalls;
+    }
+    return initialCalls;
+  });
+
+  const [selectedCallerFilter, setSelectedCallerFilter] = useState<string>("All");
+  const [userRole, setUserRole] = useState<"Admin" | "Caller">("Admin");
+  const [activeCallerName, setActiveCallerName] = useState<string>("Priya Sharma");
 
   useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
-    } catch {}
-  }, [leads, hydrated]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("solvrex_crm_leads_v2", JSON.stringify(leads));
+    }
+  }, [leads]);
 
   useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(CALLS_KEY, JSON.stringify(calls));
-    } catch {}
-  }, [calls, hydrated]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("solvrex_crm_calls_v2", JSON.stringify(calls));
+    }
+  }, [calls]);
 
-  const addLead = useCallback((lead: NewLead) => {
-    const newLead = normalizeLead({ ...lead, id: uid() });
+  const addLead = (lead: Omit<Lead, "id" | "totalCalls" | "createdAt">): Lead => {
+    const newLead: Lead = {
+      ...lead,
+      id: Date.now().toString(),
+      totalCalls: 0,
+      createdAt: new Date().toISOString().split("T")[0],
+    };
     setLeads((prev) => [newLead, ...prev]);
-  }, []);
+    return newLead;
+  };
 
-  const addLeads = useCallback((incoming: NewLead[]) => {
-    const created = incoming.map((l) => normalizeLead({ ...l, id: uid() }));
-    setLeads((prev) => [...created, ...prev]);
-  }, []);
-
-  const updateLead = useCallback((id: string, updated: Partial<Lead>) => {
+  const updateLead = (id: string, updated: Partial<Lead>) => {
     setLeads((prev) =>
-      prev.map((l) => {
-        if (l.id !== id) return l;
-        const next: Lead = { ...l, ...updated };
-        next.status = next.stage;
-        next.pipeline = pipelineForStage(next.stage);
-        return next;
-      })
+      prev.map((l) => (l.id === id ? { ...l, ...updated } : l)),
     );
-  }, []);
+  };
 
-  const deleteLead = useCallback((id: string) => {
+  const deleteLead = (id: string) => {
     setLeads((prev) => prev.filter((l) => l.id !== id));
-  }, []);
+  };
 
-  const addCallLog = useCallback((call: NewCall) => {
-    const at = call.at ?? new Date().toISOString();
-    const seconds = call.durationSeconds ?? 0;
+  const reassignLead = (id: string, newCaller: string) => {
+    updateLead(id, { assignedCaller: newCaller });
+  };
+
+  const addCallLog = (call: Omit<CallLog, "id">): CallLog => {
     const newCall: CallLog = {
-      id: uid(),
-      leadName: call.leadName,
-      leadId: call.leadId,
-      caller: call.caller,
-      outcome: call.outcome,
-      notes: call.notes ?? "",
-      at,
-      date: call.date ?? formatDateTime(at),
-      durationSeconds: seconds,
-      duration: call.duration ?? formatDuration(seconds),
+      ...call,
+      id: "call-" + Date.now().toString(),
     };
     setCalls((prev) => [newCall, ...prev]);
-  }, []);
 
-  const isManager = currentUser.role !== "caller";
+    // Also update lead's totalCalls, last outcome, and followUpDate if provided
+    updateLead(call.leadId, {
+      totalCalls: (getLeadById(call.leadId)?.totalCalls ?? 0) + 1,
+      lastCallOutcome: call.outcome,
+      notes: call.notes || getLeadById(call.leadId)?.notes,
+      ...(call.nextFollowUp
+        ? {
+            followUpDate: call.nextFollowUp.split(" ")[0],
+            followUpTime: call.nextFollowUp.split(" ")[1] || "12:00",
+            priority: call.priority || "Medium",
+          }
+        : {}),
+      ...(call.outcome === "Won" ? { pipeline: "Won" } : {}),
+      ...(call.outcome === "Meeting booked" ? { pipeline: "Meeting Booked" } : {}),
+      ...(call.outcome === "Interested" && getLeadById(call.leadId)?.pipeline === "Lead"
+        ? { pipeline: "Proposal" }
+        : {}),
+    });
 
-  const visibleLeads = useMemo(
-    () => (isManager ? leads : leads.filter((l) => l.assignedTo === currentUser.name)),
-    [leads, isManager, currentUser.name]
+    return newCall;
+  };
+
+  const getLeadById = (id: string): Lead | undefined => {
+    return leads.find((l) => l.id === id);
+  };
+
+  const getCallsForLead = (leadId: string): CallLog[] => {
+    return calls.filter((c) => c.leadId === leadId);
+  };
+
+  // CSV Export
+  const exportLeadsCSV = () => {
+    const headers = [
+      "ID",
+      "Business Name",
+      "Contact Person",
+      "Phone",
+      "Email",
+      "City",
+      "Category",
+      "Google Rating",
+      "Reviews Count",
+      "Website",
+      "Instagram",
+      "Source",
+      "Assigned Caller",
+      "Pipeline Stage",
+      "Priority",
+      "Follow-up Date",
+      "Notes",
+    ];
+
+    const rows = leads.map((l) => [
+      l.id,
+      `"${l.name.replace(/"/g, '""')}"`,
+      `"${l.contactPerson.replace(/"/g, '""')}"`,
+      `"${l.phone}"`,
+      `"${l.email}"`,
+      `"${l.city}"`,
+      `"${l.category}"`,
+      l.googleRating,
+      l.googleReviewsCount,
+      `"${l.websiteUrl}"`,
+      `"${l.instagramUrl}"`,
+      `"${l.source}"`,
+      `"${l.assignedCaller}"`,
+      `"${l.pipeline}"`,
+      `"${l.priority}"`,
+      `"${l.followUpDate}"`,
+      `"${(l.notes || "").replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `solvrex_leads_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // CSV Import
+  const importLeadsCSV = (csvText: string) => {
+    const lines = csvText.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    if (lines.length < 2) {
+      return { added: 0, errors: ["CSV file is empty or missing headers."] };
+    }
+
+    const headers = lines[0].split(",").map((h) => h.replace(/["\r]/g, "").trim().toLowerCase());
+    let addedCount = 0;
+    const errors: string[] = [];
+
+    const newLeads: Lead[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      // Simple regex for CSV line splitting
+      const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map((v) =>
+        v.replace(/^"|"$/g, "").replace(/""/g, '"').trim(),
+      );
+
+      if (values.length < 2) continue;
+
+      const nameIndex = headers.findIndex((h) => h.includes("name") || h.includes("business"));
+      const contactIndex = headers.findIndex((h) => h.includes("contact") || h.includes("person"));
+      const phoneIndex = headers.findIndex((h) => h.includes("phone") || h.includes("mobile"));
+      const emailIndex = headers.findIndex((h) => h.includes("email"));
+      const cityIndex = headers.findIndex((h) => h.includes("city") || h.includes("location"));
+      const categoryIndex = headers.findIndex((h) => h.includes("category") || h.includes("industry"));
+      const ratingIndex = headers.findIndex((h) => h.includes("rating"));
+
+      const businessName = nameIndex >= 0 ? values[nameIndex] : values[0];
+      if (!businessName) {
+        errors.push(`Row ${i}: Missing business name`);
+        continue;
+      }
+
+      newLeads.push({
+        id: "csv-" + Date.now() + "-" + i,
+        name: businessName,
+        contactPerson: contactIndex >= 0 ? values[contactIndex] : "Owner",
+        phone: phoneIndex >= 0 ? values[phoneIndex] : "",
+        email: emailIndex >= 0 ? values[emailIndex] : "",
+        city: cityIndex >= 0 ? values[cityIndex] : "Mumbai",
+        category: categoryIndex >= 0 ? values[categoryIndex] : "General",
+        googleRating: ratingIndex >= 0 ? parseFloat(values[ratingIndex]) || 4.5 : 4.5,
+        googleReviewsCount: 50,
+        websiteUrl: "",
+        instagramUrl: "",
+        source: "CSV Import",
+        assignedCaller: activeCallerName,
+        status: "New",
+        pipeline: "Lead",
+        priority: "Medium",
+        notes: "Imported via CSV",
+        followUpDate: "",
+        totalCalls: 0,
+        createdAt: new Date().toISOString().split("T")[0],
+      });
+      addedCount++;
+    }
+
+    if (newLeads.length > 0) {
+      setLeads((prev) => [...newLeads, ...prev]);
+    }
+
+    return { added: addedCount, errors };
+  };
+
+  // Compute Live Metrics
+  const stats = useMemo(() => {
+    const todayStr = "2026-11-03"; // Matches mock system date
+
+    const callsToday = calls.filter((c) => c.date.startsWith(todayStr)).length;
+    const callsThisWeek = calls.length; // Active mock set
+    const callsThisMonth = calls.length + 15;
+
+    const connectedCalls = calls.filter(
+      (c) =>
+        c.outcome !== "Not answered" &&
+        c.outcome !== "Busy" &&
+        c.outcome !== "Wrong number",
+    ).length;
+
+    const connectRate = calls.length > 0 ? Math.round((connectedCalls / calls.length) * 100) : 0;
+
+    const conversions = calls.filter(
+      (c) => c.outcome === "Won" || c.outcome === "Meeting booked",
+    ).length;
+
+    const conversionRate =
+      connectedCalls > 0 ? Math.round((conversions / connectedCalls) * 100) : 0;
+
+    const pipelineCount: Record<PipelineStage, number> = {
+      Lead: leads.filter((l) => l.pipeline === "Lead").length,
+      Contacted: leads.filter((l) => l.pipeline === "Contacted").length,
+      Proposal: leads.filter((l) => l.pipeline === "Proposal").length,
+      Negotiation: leads.filter((l) => l.pipeline === "Negotiation").length,
+      "Meeting Booked": leads.filter((l) => l.pipeline === "Meeting Booked").length,
+      Won: leads.filter((l) => l.pipeline === "Won").length,
+      Lost: leads.filter((l) => l.pipeline === "Lost").length,
+    };
+
+    const followupsDueToday = leads.filter((l) => l.followUpDate === todayStr);
+
+    // Leaderboard per caller
+    const callers = CALLER_TEAM.map((member) => {
+      const callerCalls = calls.filter((c) => c.callerName === member.name);
+      const connected = callerCalls.filter(
+        (c) =>
+          c.outcome !== "Not answered" &&
+          c.outcome !== "Busy" &&
+          c.outcome !== "Wrong number",
+      ).length;
+      const meetingsBooked = callerCalls.filter((c) => c.outcome === "Meeting booked").length;
+      const won = callerCalls.filter((c) => c.outcome === "Won").length;
+      const cRate = callerCalls.length > 0 ? Math.round((connected / callerCalls.length) * 100) : 0;
+      const convRate = connected > 0 ? Math.round(((meetingsBooked + won) / connected) * 100) : 0;
+
+      return {
+        callerName: member.name,
+        callsMade: callerCalls.length,
+        connected,
+        meetingsBooked,
+        won,
+        connectRate: cRate,
+        conversionRate: convRate,
+      };
+    }).sort((a, b) => b.won * 2 + b.meetingsBooked - (a.won * 2 + a.meetingsBooked));
+
+    return {
+      callsToday,
+      callsThisWeek,
+      callsThisMonth,
+      connectRate,
+      conversionRate,
+      pipelineCount,
+      followupsDueToday,
+      callerLeaderboard: callers,
+    };
+  }, [calls, leads]);
+
+  return (
+    <CRMContext.Provider
+      value={{
+        leads,
+        calls,
+        selectedCallerFilter,
+        setSelectedCallerFilter,
+        userRole,
+        setUserRole,
+        activeCallerName,
+        setActiveCallerName,
+        addLead,
+        updateLead,
+        deleteLead,
+        reassignLead,
+        addCallLog,
+        getLeadById,
+        getCallsForLead,
+        exportLeadsCSV,
+        importLeadsCSV,
+        stats,
+      }}
+    >
+      {children}
+    </CRMContext.Provider>
   );
-
-  const visibleCalls = useMemo(
-    () => (isManager ? calls : calls.filter((c) => c.caller === currentUser.name)),
-    [calls, isManager, currentUser.name]
-  );
-
-  const value = useMemo<CRMContextType>(
-    () => ({
-      hydrated,
-      leads,
-      calls,
-      visibleLeads,
-      visibleCalls,
-      isManager,
-      team,
-      currentUser,
-      addLead,
-      addLeads,
-      updateLead,
-      deleteLead,
-      addCallLog,
-    }),
-    [hydrated, leads, calls, visibleLeads, visibleCalls, isManager, team, currentUser, addLead, addLeads, updateLead, deleteLead, addCallLog]
-  );
-
-  return <CRMContext.Provider value={value}>{children}</CRMContext.Provider>;
 }
 
 export const useCRM = () => {

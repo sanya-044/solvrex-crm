@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "email:test": "node --conditions=react-server --import tsx scripts/send-test-email.ts",
     "db:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:pull": "prisma db pull",
     "db:seed": "prisma db seed"
   },
@@ -25,6 +26,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.4",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
