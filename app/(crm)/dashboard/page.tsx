@@ -106,7 +106,7 @@ function Kpi({ title, value, delta, icon }: { title: string; value: string; delt
   const tone =
     delta.dir === "up" ? "text-emerald-600 " : delta.dir === "down" ? "text-rose-600 " : "text-slate-500";
   return (
-    <div className="bg-white border border-[#d9e7e3] rounded-2xl p-5">
+    <div className="bg-white border border-[#dce8e4] rounded-[20px] p-5 shadow-[0_4px_14px_rgba(15,45,40,0.05)]">
       <div className="flex justify-between items-start">
         <p className="text-sm text-slate-500">{title}</p>
         <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600  flex items-center justify-center">{icon}</span>
@@ -305,7 +305,7 @@ export default function Dashboard() {
   if (!hydrated) return <p className="text-sm text-slate-500">Loading dashboard...</p>;
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-full space-y-4 text-[#102a2a]">
       {/* Search in the top bar: opens the Leads page with the text filled in */}
       <TopbarActions>
         <form onSubmit={submitSearch} className="relative hidden sm:block">
@@ -339,7 +339,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <Kpi title="Calls made" value={String(s.total)} delta={countDelta(s.total, p.total)} icon={<IconPhone />} />
         <Kpi title="Connect rate" value={`${Math.round(s.rate)}%`} delta={rateDelta} icon={<IconPhoneIn />} />
         <Kpi title="Meetings booked" value={String(s.meetings)} delta={countDelta(s.meetings, p.meetings)} icon={<IconTarget />} />
@@ -347,8 +347,8 @@ export default function Dashboard() {
       </div>
 
       {/* Chart + Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white border border-[#d9e7e3] rounded-2xl p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+        <div className="bg-white border border-[#dce8e4] rounded-[20px] p-5 shadow-[0_4px_14px_rgba(15,45,40,0.05)]">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-base font-semibold text-[#102a2a]">Calls vs connected · {cfg.chart}</h2>
             <div className="flex gap-3 text-xs text-slate-500">
@@ -360,7 +360,7 @@ export default function Dashboard() {
           {s.total === 0 && <p className="text-xs text-slate-500 mt-2">No calls logged in this period. Log a call from the Leads page.</p>}
         </div>
 
-        <div className="bg-white border border-[#d9e7e3] rounded-2xl p-5">
+        <div className="bg-white border border-[#dce8e4] rounded-[20px] p-5 shadow-[0_4px_14px_rgba(15,45,40,0.05)]">
           <h2 className="text-base font-semibold text-[#102a2a] mb-5">Pipeline by stage</h2>
           <div className="space-y-4">
             {stageCounts.map(({ stage, count }) => (
@@ -379,8 +379,8 @@ export default function Dashboard() {
       </div>
 
       {/* Leaderboard + Queue */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white border border-[#d9e7e3] rounded-2xl p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
+        <div className="bg-white border border-[#dce8e4] rounded-[20px] p-5 shadow-[0_4px_14px_rgba(15,45,40,0.05)]">
           <h2 className="text-base font-semibold text-[#102a2a] mb-4">Leaderboard</h2>
           <ul className="space-y-3.5">
             {leaderboard.map((row, i) => (
@@ -404,7 +404,7 @@ export default function Dashboard() {
           </ul>
         </div>
 
-        <div className="lg:col-span-2 bg-white border border-[#d9e7e3] rounded-2xl p-5">
+        <div className="bg-white border border-[#dce8e4] rounded-[20px] p-5 shadow-[0_4px_14px_rgba(15,45,40,0.05)]">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-base font-semibold text-[#102a2a]">Today&apos;s calls queue</h2>
             <a href="/leads" className="text-xs text-slate-500 hover:text-[#102a2a]">View all</a>

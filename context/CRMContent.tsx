@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 /* =====================================================================
    Constants
@@ -32,7 +33,7 @@ export interface TeamUser {
   role: Role;
 }
 
-/** Temporary team list until real login (Supabase/auth) is connected. */
+/** Assignable callers. Temporary list until a "list users" API exists; the logged-in user is always added. */
 export const TEAM: TeamUser[] = [
   { name: "Raj", role: "admin" },
   { name: "Shruti", role: "manager" },
@@ -41,12 +42,12 @@ export const TEAM: TeamUser[] = [
 ];
 
 export const STAGE_STYLE: Record<Stage, string> = {
-  New: "bg-zinc-800 text-slate-300 border-zinc-700",
-  Contacted: "bg-sky-500/10 text-sky-300 border-sky-500/30",
-  Interested: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  Meeting: "bg-violet-500/10 text-violet-300 border-violet-500/30",
-  Won: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
-  Lost: "bg-rose-500/10 text-rose-300 border-rose-500/30",
+  New: "bg-zinc-800 text-zinc-300 border-zinc-700",
+  Contacted: "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:border-sky-500/30",
+  Interested: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+  Meeting: "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-500/15 dark:text-teal-300 dark:border-teal-500/30",
+  Won: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  Lost: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
 };
 
 export const STAGE_BAR: Record<Stage, string> = {
@@ -115,7 +116,6 @@ interface CRMContextType {
   isManager: boolean;
   team: TeamUser[];
   currentUser: TeamUser;
-  setCurrentUser: (user: TeamUser) => void;
   addLead: (lead: NewLead) => void;
   addLeads: (leads: NewLead[]) => void;
   updateLead: (id: string, updated: Partial<Lead>) => void;
@@ -300,7 +300,6 @@ const initialCalls: CallLog[] = [
 
 const LEADS_KEY = "solvrex_crm_leads";
 const CALLS_KEY = "solvrex_crm_calls";
-const USER_KEY = "solvrex_crm_user";
 
 /* =====================================================================
    Provider
@@ -311,7 +310,21 @@ const CRMContext = createContext<CRMContextType | undefined>(undefined);
 export function CRMProvider({ children }: { children: ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [calls, setCalls] = useState<CallLog[]>(initialCalls);
-  const [currentUser, setCurrentUserState] = useState<TeamUser>(TEAM[0]);
+  const { user } = useAuth();
+  const fullName = user?.fullName ?? "";
+  const rawRole = user?.role ?? "";
+  const currentUser = useMemo<TeamUser>(() => {
+    const r = rawRole.toLowerCase();
+    const role: Role = r.includes("admin") ? "admin" : r.includes("manager") ? "manager" : "caller";
+    return { name: fullName || "User", role };
+  }, [fullName, rawRole]);
+  const team = useMemo<TeamUser[]>(() => {
+    const names = [currentUser.name, ...TEAM.map((t) => t.name)].filter((n, i, a) => a.indexOf(n) === i);
+    return names.map((name) => ({
+      name,
+      role: name === currentUser.name ? currentUser.role : (TEAM.find((t) => t.name === name)?.role ?? "caller"),
+    }));
+  }, [currentUser]);
   const [hydrated, setHydrated] = useState(false);
 
   // Load saved data once, after the first render (avoids server/browser mismatch).
@@ -327,9 +340,6 @@ export function CRMProvider({ children }: { children: ReactNode }) {
         const parsed: unknown = JSON.parse(savedCalls);
         if (Array.isArray(parsed)) setCalls(parsed.map((c) => normalizeCall(c as Record<string, unknown>)));
       }
-      const savedUser = localStorage.getItem(USER_KEY);
-      const user = TEAM.find((t) => t.name === savedUser);
-      if (user) setCurrentUserState(user);
     } catch {
       // Corrupted saved data: keep the demo data instead of crashing.
     }
@@ -349,13 +359,6 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(CALLS_KEY, JSON.stringify(calls));
     } catch {}
   }, [calls, hydrated]);
-
-  const setCurrentUser = useCallback((user: TeamUser) => {
-    setCurrentUserState(user);
-    try {
-      localStorage.setItem(USER_KEY, user.name);
-    } catch {}
-  }, []);
 
   const addLead = useCallback((lead: NewLead) => {
     const newLead = normalizeLead({ ...lead, id: uid() });
@@ -421,16 +424,15 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       visibleLeads,
       visibleCalls,
       isManager,
-      team: TEAM,
+      team,
       currentUser,
-      setCurrentUser,
       addLead,
       addLeads,
       updateLead,
       deleteLead,
       addCallLog,
     }),
-    [hydrated, leads, calls, visibleLeads, visibleCalls, isManager, currentUser, setCurrentUser, addLead, addLeads, updateLead, deleteLead, addCallLog]
+    [hydrated, leads, calls, visibleLeads, visibleCalls, isManager, team, currentUser, addLead, addLeads, updateLead, deleteLead, addCallLog]
   );
 
   return <CRMContext.Provider value={value}>{children}</CRMContext.Provider>;

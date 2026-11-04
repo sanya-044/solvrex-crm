@@ -24,3 +24,109 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* =====================================================================
+   CRM theme (light / dark)
+   Everything below only applies inside the CRM area, which is wrapped in
+   <div data-theme="light|dark"> by ThemeProvider (components/ThemeToggle.tsx).
+   The login page and other pages outside it are NOT affected.
+   ===================================================================== */
+
+/* dark: variant follows the data-theme attribute, not the OS setting */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+[data-theme] {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+}
+
+[data-theme="light"] {
+  --bg: #f4f7f7;
+  --accent: #0f8f6d;
+  --accent-hover: #0c7a5c;
+  --side: #0a2d2b;
+  --side-ink: #c4dad7;
+  --side-hover: #12403d;
+  --side-active: #14504a;
+  --side-accent: #3ddbb0;
+  color: #10201e;
+
+  /* The pages use Tailwind's dark zinc/slate colours. In light mode these are
+     re-mapped, so every CRM page turns light without editing each class. */
+  --color-zinc-950: #f3f6f6;
+  --color-zinc-900: #ffffff;
+  --color-zinc-800: #e4ebea;
+  --color-zinc-700: #d3dcdb;
+  --color-zinc-600: #9fb0ad;
+  --color-zinc-500: #6b7c79;
+  --color-zinc-400: #566764;
+  --color-zinc-300: #3b4a47;
+  --color-slate-100: #10201e;
+  --color-slate-200: #1a2b29;
+  --color-slate-300: #2d3d3a;
+  --color-slate-400: #566764;
+}
+
+[data-theme="dark"] {
+  --bg: #080b0b;
+  --accent: #14a37c;
+  --accent-hover: #18b78a;
+  --side: #061918;
+  --side-ink: #aac2bf;
+  --side-hover: #0d2a28;
+  --side-active: #103a36;
+  --side-accent: #3ddbb0;
+  color: #e7efed;
+  color-scheme: dark;
+}
+
+/* text-white means "main text" on cards, so it turns dark in light mode,
+   except on coloured buttons where white text must stay white. */
+[data-theme="light"] .text-white {
+  color: #10201e;
+}
+[data-theme="light"] [class*="bg-emerald-"].text-white,
+[data-theme="light"] [class*="bg-teal-"].text-white,
+[data-theme="light"] [class*="bg-rose-"].text-white,
+[data-theme="light"] [class*="bg-red-"].text-white {
+  color: #ffffff;
+}
+
+/* ---------- Reusable buttons ---------- */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  white-space: nowrap;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--color-zinc-900);
+  color: var(--color-slate-200);
+  border: 1px solid var(--color-zinc-700);
+  font-size: 0.875rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.6rem;
+  white-space: nowrap;
+}
+.btn-ghost:hover {
+  background: var(--color-zinc-800);
+}

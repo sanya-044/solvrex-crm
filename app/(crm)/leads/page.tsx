@@ -427,7 +427,7 @@ export default function LeadsPage() {
   if (!hydrated) return <p className="text-sm text-[#91a6a1]">Loading leads...</p>;
 
   return (
-    <div className="space-y-5">
+    <div className="min-h-full space-y-5 text-[#102a2a]">
       {/* Buttons shown in the top bar (like the reference) */}
       <TopbarActions>
         <div className="relative hidden xl:block">
@@ -480,7 +480,7 @@ export default function LeadsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-[#e0ebe7] rounded-2xl shadow-sm overflow-x-auto">
+      <div className="bg-white border border-[#dce8e4] rounded-[20px] shadow-[0_4px_14px_rgba(15,45,40,0.05)] overflow-x-auto">
         <table className="w-full min-w-[1050px] text-left text-sm text-[#526d67]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wider text-[#91a6a1] border-b border-[#e0ebe7]">
@@ -505,22 +505,22 @@ export default function LeadsPage() {
               </tr>
             )}
             {filtered.map((lead) => (
-              <tr key={lead.id} className="hover:bg-[#f3f8f6]">
-                <td className="px-5 py-4 font-semibold text-[#203b37]">{lead.name}</td>
-                <td className="px-3 py-4">
+              <tr key={lead.id} className="hover:bg-[#f5faf8]">
+                <td className="px-5 py-[17px] font-medium text-[#102a2a]">{lead.name}</td>
+                <td className="px-3 py-[17px]">
                   <div className="text-[#526d67]">{lead.contactPerson || "-"}</div>
                   <div className="text-xs text-[#91a6a1]">{lead.phone}</div>
                 </td>
-                <td className="px-3 py-4">{lead.city || "-"}</td>
-                <td className="px-3 py-4">{lead.category || "-"}</td>
-                <td className="px-3 py-4 whitespace-nowrap">
+                <td className="px-3 py-[17px]">{lead.city || "-"}</td>
+                <td className="px-3 py-[17px]">{lead.category || "-"}</td>
+                <td className="px-3 py-[17px] whitespace-nowrap">
                   {lead.rating != null ? (
                     <span className="text-[#526d67]"><span className="text-amber-400">★</span> {lead.rating.toFixed(1)}</span>
                   ) : (
                     <span className="text-[#a4b6b1]">-</span>
                   )}
                 </td>
-                <td className="px-3 py-4">
+                <td className="px-3 py-[17px]">
                   <div className="flex items-center gap-2.5 text-[#718985]">
                     {lead.website && (
                       <a href={lead.website} target="_blank" rel="noopener noreferrer" title="Website" className="hover:text-[#203b37]">
@@ -534,8 +534,8 @@ export default function LeadsPage() {
                     )}
                   </div>
                 </td>
-                <td className="px-3 py-4 text-[#718985]">{lead.source || "-"}</td>
-                <td className="px-3 py-4">
+                <td className="px-3 py-[17px] text-[#718985]">{lead.source || "-"}</td>
+                <td className="px-3 py-[17px]">
                   <select
                     value={lead.stage}
                     onChange={(e) => updateLead(lead.id, { stage: e.target.value as Stage })}
@@ -546,7 +546,7 @@ export default function LeadsPage() {
                     ))}
                   </select>
                 </td>
-                <td className="px-3 py-4">
+                <td className="px-3 py-[17px]">
                   {isManager ? (
                     <select
                       value={lead.assignedTo}
@@ -562,7 +562,7 @@ export default function LeadsPage() {
                     lead.assignedTo || "-"
                   )}
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-5 py-[17px]">
                   <div className="flex justify-end items-center gap-3">
                     <button onClick={() => openEdit(lead)} className="text-xs text-[#91a6a1] hover:text-[#203b37]">Edit</button>
                     {isManager && (
