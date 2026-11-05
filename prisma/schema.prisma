@@ -24,6 +24,7 @@ model User {
   passwordHash    String        @map("password_hash")
   roleId          BigInt        @map("role_id")
   isActive        Boolean       @default(true) @map("is_active")
+  phone           String?       @db.VarChar(20)
   emailVerifiedAt DateTime?     @map("email_verified_at") @db.Timestamptz(6)
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
@@ -62,4 +63,64 @@ model PasswordResetToken {
   @@index([userId], map: "idx_password_reset_tokens_user_id")
   @@index([expiresAt], map: "idx_password_reset_tokens_expires_at")
   @@map("password_reset_tokens")
+}
+
+enum CallStatus {
+  INITIATING
+  RINGING
+  CONNECTED
+  COMPLETED
+  FAILED
+  BUSY
+  NO_ANSWER
+}
+
+enum FollowUpStatus {
+  PENDING
+  DONE
+}
+
+model Call {
+  id              String     @id @default(cuid())
+  leadId          String     @map("lead_id")
+  leadName        String     @map("lead_name")
+  leadPhone       String     @map("lead_phone")
+  callerId        String     @map("caller_id")
+  callerName      String     @map("caller_name")
+  callerPhone     String     @map("caller_phone")
+  exotelCallSid   String?    @unique @map("exotel_call_sid")
+  status          CallStatus @default(INITIATING)
+  outcome         String?
+  notes           String?
+  durationSeconds Int        @default(0) @map("duration_seconds")
+  recordingUrl    String?    @map("recording_url")
+  answeredAt      DateTime?  @map("answered_at") @db.Timestamptz(6)
+  endedAt         DateTime?  @map("ended_at") @db.Timestamptz(6)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  followUps       FollowUp[]
+
+  @@index([leadId], map: "idx_calls_lead_id")
+  @@index([callerId], map: "idx_calls_caller_id")
+  @@index([status], map: "idx_calls_status")
+  @@map("calls")
+}
+
+model FollowUp {
+  id             String         @id @default(cuid())
+  callId         String?        @map("call_id")
+  leadId         String         @map("lead_id")
+  leadName       String         @map("lead_name")
+  assignedToId   String         @map("assigned_to_id")
+  assignedToName String         @map("assigned_to_name")
+  dueAt          DateTime       @map("due_at") @db.Timestamptz(6)
+  priority       String         @default("Medium") @db.VarChar(10)
+  notes          String?
+  status         FollowUpStatus @default(PENDING)
+  completedAt    DateTime?      @map("completed_at") @db.Timestamptz(6)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  call           Call?          @relation(fields: [callId], references: [id], onDelete: SetNull)
+
+  @@index([assignedToId, status, dueAt], map: "idx_followups_assignee_due")
+  @@map("follow_ups")
 }
