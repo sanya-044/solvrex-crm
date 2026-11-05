@@ -12,12 +12,12 @@ export default function UserSwitcher() {
       title="Viewing as"
       aria-label="Viewing as"
       onChange={(e) => {
-        const user = TEAM.find((t) => t.name === e.target.value);
+        const user = TEAM.find((t: { name: string }) => t.name === e.target.value);
         if (user) setCurrentUser(user);
       }}
       className="bg-zinc-900 border border-zinc-700 rounded-lg px-2.5 py-2 text-slate-200 text-sm outline-none"
     >
-      {TEAM.map((t) => (
+      {TEAM.map((t: { name: string; role: string }) => (
         <option key={t.name} value={t.name}>
           {t.name} · {t.role}
         </option>

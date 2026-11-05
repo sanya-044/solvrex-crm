@@ -31,6 +31,36 @@ export default function CallWorkspacePage({
   const lead = getLeadById(leadId) || leads[0];
   const previousCalls = lead ? getCallsForLead(lead.id) : [];
 
+  // Live Call History from Database API
+  const [callHistory, setCallHistory] = useState<typeof previousCalls>(previousCalls);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  const fetchCallHistory = async (targetLeadId: string) => {
+    setIsLoadingHistory(true);
+    try {
+      const res = await fetch(`/api/calls?leadId=${encodeURIComponent(targetLeadId)}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.calls && Array.isArray(data.calls)) {
+          setCallHistory(data.calls);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch call history from /api/calls:", err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (lead?.id) {
+      fetchCallHistory(lead.id);
+    }
+  }, [lead?.id]);
+
   const currentIndex = leads.findIndex((l) => l.id === lead?.id);
   const prevLead = currentIndex > 0 ? leads[currentIndex - 1] : null;
   const nextLead = currentIndex < leads.length - 1 ? leads[currentIndex + 1] : null;
@@ -101,23 +131,40 @@ export default function CallWorkspacePage({
     setSeconds(0);
   };
 
-  const handleSaveCallLog = () => {
+  const handleSaveCallLog = async () => {
     if (!lead) return;
     const finalDuration = formatTimer(seconds > 0 ? seconds : 142);
+    const durSec = seconds > 0 ? seconds : 142;
 
-    addCallLog({
+    const newLogData = {
       leadId: lead.id,
       leadName: lead.name,
       callerName: activeCallerName,
       date: new Date().toISOString().replace("T", " ").substring(0, 16),
       outcome: selectedOutcome,
       duration: finalDuration,
-      durationSeconds: seconds > 0 ? seconds : 142,
+      durationSeconds: durSec,
       notes: notes.trim() || `Outcome logged: ${selectedOutcome}.`,
       recordingUrl: recordingUrl || undefined,
       nextFollowUp: followUpDate ? `${followUpDate} ${followUpTime}` : undefined,
       priority,
-    });
+    };
+
+    // 1. Persist directly to Database via /api/calls
+    try {
+      await fetch("/api/calls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newLogData),
+      });
+      // Refresh timeline from API
+      await fetchCallHistory(lead.id);
+    } catch (e) {
+      console.error("Failed to post call log to /api/calls:", e);
+    }
+
+    // 2. Also sync to CRM context for optimistic UI updates
+    addCallLog(newLogData);
 
     setSavedSuccess(true);
     setTimeout(() => {
@@ -437,14 +484,35 @@ export default function CallWorkspacePage({
           {/* Past Touchpoints Timeline */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                Call History ({previousCalls.length})
-              </h3>
-              <span className="text-[10px] text-zinc-500">Timeline</span>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                  Call History ({(callHistory.length > 0 ? callHistory : previousCalls).length})
+                </h3>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  api/calls
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => lead?.id && fetchCallHistory(lead.id)}
+                className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-800/60 hover:bg-zinc-800 transition"
+                title="Refresh Call History from API"
+              >
+                <span>🔄</span>
+                <span>{isLoadingHistory ? "Syncing..." : "Sync"}</span>
+              </button>
             </div>
 
             <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
-              {previousCalls.map((c) => (
+              {isLoadingHistory && (callHistory.length === 0 && previousCalls.length === 0) && (
+                <div className="p-4 text-center text-zinc-400 text-xs flex items-center justify-center gap-2">
+                  <span className="w-3 h-3 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin"></span>
+                  <span>Fetching history from database API...</span>
+                </div>
+              )}
+
+              {(callHistory.length > 0 ? callHistory : previousCalls).map((c) => (
                 <div
                   key={c.id}
                   className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/90 space-y-1.5 text-xs hover:border-zinc-700 transition"
@@ -468,7 +536,7 @@ export default function CallWorkspacePage({
                 </div>
               ))}
 
-              {previousCalls.length === 0 && (
+              {(callHistory.length === 0 && previousCalls.length === 0) && !isLoadingHistory && (
                 <div className="p-4 text-center text-zinc-500 text-xs italic">
                   No previous touchpoints recorded for this prospect. Be the first to log a call!
                 </div>

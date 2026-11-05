@@ -99,6 +99,7 @@ model Call {
   createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   followUps       FollowUp[]
+  lead            Lead?      @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId], map: "idx_calls_lead_id")
   @@index([callerId], map: "idx_calls_caller_id")
@@ -123,4 +124,35 @@ model FollowUp {
 
   @@index([assignedToId, status, dueAt], map: "idx_followups_assignee_due")
   @@map("follow_ups")
+}
+
+model Lead {
+  id                 String     @id @default(cuid())
+  name               String     @map("name") @db.VarChar(255)
+  contactPerson      String     @map("contact_person") @db.VarChar(100)
+  phone              String     @map("phone") @db.VarChar(50)
+  email              String     @default("") @map("email") @db.VarChar(255)
+  city               String     @default("") @map("city") @db.VarChar(100)
+  category           String     @default("") @map("category") @db.VarChar(100)
+  googleRating       Float      @default(0.0) @map("google_rating")
+  googleReviewsCount Int        @default(0) @map("google_reviews_count")
+  websiteUrl         String     @default("") @map("website_url") @db.VarChar(500)
+  instagramUrl       String     @default("") @map("instagram_url") @db.VarChar(500)
+  source             String     @default("Google Maps") @map("source") @db.VarChar(100)
+  assignedCaller     String     @default("Priya Sharma") @map("assigned_caller") @db.VarChar(100)
+  status             String     @default("New") @map("status") @db.VarChar(50)
+  pipeline           String     @default("Lead") @map("pipeline") @db.VarChar(50)
+  priority           String     @default("Medium") @map("priority") @db.VarChar(20)
+  notes              String?    @map("notes")
+  followUpDate       String     @default("") @map("follow_up_date") @db.VarChar(50)
+  followUpTime       String?    @map("follow_up_time") @db.VarChar(20)
+  lastCallOutcome    String?    @map("last_call_outcome") @db.VarChar(50)
+  totalCalls         Int        @default(0) @map("total_calls")
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  calls              Call[]
+
+  @@index([assignedCaller], map: "idx_leads_assigned_caller")
+  @@index([pipeline], map: "idx_leads_pipeline")
+  @@map("leads")
 }

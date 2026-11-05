@@ -28,7 +28,27 @@ export type CallOutcome =
   | "Meeting booked"
   | "Won";
 
+export const OUTCOMES: CallOutcome[] = [
+  "Not answered",
+  "Busy",
+  "Call back",
+  "Interested",
+  "Not interested",
+  "Wrong number",
+  "Meeting booked",
+  "Won",
+];
+
 export type Priority = "High" | "Medium" | "Low";
+
+export const PRIORITIES: Priority[] = ["High", "Medium", "Low"];
+
+export function stageAfterCall(outcome: string, currentStage?: string): PipelineStage {
+  if (outcome === "Won") return "Won";
+  if (outcome === "Meeting booked") return "Meeting Booked";
+  if (outcome === "Interested" && (!currentStage || currentStage === "Lead")) return "Proposal";
+  return (currentStage as PipelineStage) || "Lead";
+}
 
 export interface Lead {
   id: string;
@@ -101,6 +121,8 @@ export const CALLER_TEAM: CallerMember[] = [
   { id: "c3", name: "Ankit Patel", email: "ankit@solvrex.com", role: "Caller", targetCallsPerDay: 45 },
   { id: "c4", name: "Neha Gupta", email: "neha@solvrex.com", role: "Caller", targetCallsPerDay: 50 },
 ];
+
+export const TEAM = CALLER_TEAM;
 
 export const SAVED_TEMPLATES: MessageTemplate[] = [
   {
@@ -524,6 +546,8 @@ interface CRMContextType {
   setUserRole: (role: "Admin" | "Caller") => void;
   activeCallerName: string;
   setActiveCallerName: (name: string) => void;
+  currentUser: { name: string; role: string };
+  setCurrentUser: (u: { name: string; role: string }) => void;
   // Lead Operations
   addLead: (lead: Omit<Lead, "id" | "totalCalls" | "createdAt">) => Lead;
   updateLead: (id: string, updated: Partial<Lead>) => void;
@@ -560,37 +584,49 @@ interface CRMContextType {
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export function CRMProvider({ children }: { children: ReactNode }) {
-  const [leads, setLeads] = useState<Lead[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("solvrex_crm_leads_v2");
-      return saved ? JSON.parse(saved) : initialLeads;
-    }
-    return initialLeads;
-  });
-
-  const [calls, setCalls] = useState<CallLog[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("solvrex_crm_calls_v2");
-      return saved ? JSON.parse(saved) : initialCalls;
-    }
-    return initialCalls;
-  });
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  const [calls, setCalls] = useState<CallLog[]>(initialCalls);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [selectedCallerFilter, setSelectedCallerFilter] = useState<string>("All");
   const [userRole, setUserRole] = useState<"Admin" | "Caller">("Admin");
   const [activeCallerName, setActiveCallerName] = useState<string>("Priya Sharma");
 
+  // Load from database on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("solvrex_crm_leads_v2", JSON.stringify(leads));
-    }
-  }, [leads]);
+    let isMounted = true;
+    async function loadFromDatabase() {
+      try {
+        setIsLoading(true);
+        // Fetch leads from database API
+        const leadsRes = await fetch("/api/leads", { cache: "no-store" });
+        if (leadsRes.ok) {
+          const leadsData = await leadsRes.json();
+          if (isMounted && leadsData.leads && Array.isArray(leadsData.leads)) {
+            setLeads(leadsData.leads);
+          }
+        }
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("solvrex_crm_calls_v2", JSON.stringify(calls));
+        // Fetch calls from database API
+        const callsRes = await fetch("/api/calls", { cache: "no-store" });
+        if (callsRes.ok) {
+          const callsData = await callsRes.json();
+          if (isMounted && callsData.calls && Array.isArray(callsData.calls)) {
+            setCalls(callsData.calls);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load initial CRM data from database:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
     }
-  }, [calls]);
+
+    loadFromDatabase();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const addLead = (lead: Omit<Lead, "id" | "totalCalls" | "createdAt">): Lead => {
     const newLead: Lead = {
@@ -599,18 +635,41 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       totalCalls: 0,
       createdAt: new Date().toISOString().split("T")[0],
     };
+    // Optimistic UI update
     setLeads((prev) => [newLead, ...prev]);
+
+    // Persist to database API
+    fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newLead),
+    }).catch((err) => console.error("Failed to save lead to database API:", err));
+
     return newLead;
   };
 
   const updateLead = (id: string, updated: Partial<Lead>) => {
+    // Optimistic UI update
     setLeads((prev) =>
       prev.map((l) => (l.id === id ? { ...l, ...updated } : l)),
     );
+
+    // Persist to database API
+    fetch(`/api/leads/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    }).catch((err) => console.error("Failed to update lead in database API:", err));
   };
 
   const deleteLead = (id: string) => {
+    // Optimistic UI update
     setLeads((prev) => prev.filter((l) => l.id !== id));
+
+    // Persist to database API
+    fetch(`/api/leads/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Failed to delete lead from database API:", err));
   };
 
   const reassignLead = (id: string, newCaller: string) => {
@@ -622,7 +681,18 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       ...call,
       id: "call-" + Date.now().toString(),
     };
+    // Optimistic UI update
     setCalls((prev) => [newCall, ...prev]);
+
+    // Persist to database API
+    fetch("/api/calls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...newCall,
+        priority: call.priority || "Medium",
+      }),
+    }).catch((err) => console.error("Failed to save call to database API:", err));
 
     // Also update lead's totalCalls, last outcome, and followUpDate if provided
     updateLead(call.leadId, {
@@ -775,6 +845,12 @@ export function CRMProvider({ children }: { children: ReactNode }) {
 
     if (newLeads.length > 0) {
       setLeads((prev) => [...newLeads, ...prev]);
+      // Persist bulk imported leads to database API
+      fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leads: newLeads }),
+      }).catch((err) => console.error("Failed to save imported leads to database API:", err));
     }
 
     return { added: addedCount, errors };
@@ -864,6 +940,13 @@ export function CRMProvider({ children }: { children: ReactNode }) {
         setUserRole,
         activeCallerName,
         setActiveCallerName,
+        currentUser: { name: activeCallerName, role: userRole },
+        setCurrentUser: (u: { name: string; role: string }) => {
+          setActiveCallerName(u.name);
+          if (u.role === "Admin" || u.role === "Caller") {
+            setUserRole(u.role);
+          }
+        },
         addLead,
         updateLead,
         deleteLead,

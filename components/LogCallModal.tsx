@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useCRM, OUTCOMES, PRIORITIES, stageAfterCall } from "@/context/CRMContent";
-import type { Lead, Priority } from "@/context/CRMContent";
+import type { Lead, Priority, CallOutcome } from "@/context/CRMContent";
 
 const POSITIVE = ["Interested", "Meeting booked", "Won"];
 
@@ -32,15 +33,18 @@ export default function LogCallModal({ lead, onClose }: { lead: Lead; onClose: (
     addCallLog({
       leadId: lead.id,
       leadName: lead.name,
-      caller: currentUser.name,
-      outcome,
+      callerName: currentUser.name,
+      date: new Date().toISOString().replace("T", " ").substring(0, 16),
+      outcome: outcome as CallOutcome,
+      duration: clock(seconds),
       notes,
       durationSeconds: seconds,
+      priority,
     });
-    const nextStage = stageAfterCall(outcome, lead.stage);
+    const nextStage = stageAfterCall(outcome, lead.pipeline);
     const finished = nextStage === "Won" || nextStage === "Lost";
     updateLead(lead.id, {
-      stage: nextStage,
+      pipeline: nextStage,
       followUpDate: finished ? "" : fuDate,
       followUpTime: finished ? "" : fuTime,
       priority,
@@ -83,9 +87,8 @@ export default function LogCallModal({ lead, onClose }: { lead: Lead; onClose: (
                   key={o}
                   type="button"
                   onClick={() => setOutcome(o)}
-                  className={`text-sm px-3 py-2 rounded-lg border transition ${tone} ${
-                    selected ? "ring-2 ring-slate-300" : "hover:border-zinc-500"
-                  }`}
+                  className={`text-sm px-3 py-2 rounded-lg border transition ${tone} ${selected ? "ring-2 ring-slate-300" : "hover:border-zinc-500"
+                    }`}
                 >
                   {o}
                 </button>
