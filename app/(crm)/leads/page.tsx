@@ -14,7 +14,15 @@ export default function LeadsPage() {
     importLeadsCSV,
     userRole,
     activeCallerName,
+    teamMembers,
   } = useCRM();
+
+  const callerOptions = useMemo(() => {
+    const names = new Set<string>();
+    teamMembers.forEach((t) => names.add(t.fullName));
+    CALLER_TEAM.forEach((c) => names.add(c.name));
+    return Array.from(names);
+  }, [teamMembers]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("All");
@@ -44,7 +52,7 @@ export default function LeadsPage() {
     pipeline: "Lead",
     priority: "High",
     notes: "",
-    followUpDate: "2026-11-03",
+    followUpDate: new Date().toISOString().slice(0, 10),
     followUpTime: "14:00",
   });
 
@@ -52,7 +60,10 @@ export default function LeadsPage() {
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       // Role enforcement: Callers only see their assigned leads unless Admin
-      if (userRole === "Caller" && lead.assignedCaller !== activeCallerName) {
+      if (
+        userRole === "Caller" &&
+        lead.assignedCaller?.toLowerCase() !== activeCallerName?.toLowerCase()
+      ) {
         return false;
       }
 
@@ -207,9 +218,9 @@ export default function LeadsPage() {
               className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700/80 text-white outline-none focus:border-amber-400 disabled:opacity-50"
             >
               <option value="All">All Callers</option>
-              {CALLER_TEAM.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
+              {callerOptions.map((name) => (
+                <option key={name} value={name}>
+                  {name}
                 </option>
               ))}
             </select>
@@ -312,9 +323,21 @@ export default function LeadsPage() {
                     <div className="font-semibold text-zinc-200">
                       {lead.contactPerson}
                     </div>
-                    <div className="text-zinc-400 text-[11px] mt-0.5 flex items-center gap-1">
-                      <span>📞</span>
-                      <span>{lead.phone}</span>
+                    <div className="text-zinc-400 text-[11px] mt-0.5 flex items-center gap-1.5 flex-wrap">
+                      <span>📞 {lead.phone}</span>
+                      {lead.phone && (
+                        <a
+                          href={`https://wa.me/${lead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                            `Hi ${lead.contactPerson || lead.name}, this is ${activeCallerName} from Solvrex.`
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 hover:bg-emerald-800 text-[10px] font-semibold transition inline-flex items-center gap-0.5"
+                          title="Message on WhatsApp"
+                        >
+                          <span>💬 WA</span>
+                        </a>
+                      )}
                     </div>
                   </td>
 
@@ -353,9 +376,9 @@ export default function LeadsPage() {
                         onChange={(e) => reassignLead(lead.id, e.target.value)}
                         className="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200 outline-none focus:border-amber-400"
                       >
-                        {CALLER_TEAM.map((c) => (
-                          <option key={c.id} value={c.name}>
-                            {c.name}
+                        {callerOptions.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
                           </option>
                         ))}
                       </select>
@@ -514,9 +537,9 @@ export default function LeadsPage() {
                     onChange={(e) => setFormData({ ...formData, assignedCaller: e.target.value })}
                     className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
                   >
-                    {CALLER_TEAM.map((c) => (
-                      <option key={c.id} value={c.name}>
-                        {c.name}
+                    {callerOptions.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
                       </option>
                     ))}
                   </select>

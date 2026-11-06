@@ -6,7 +6,6 @@ import { useState } from "react";
 
 /* ---------- Calls vs connected chart ---------- */
 
-const MOCK_TODAY = "2026-11-03"; // same "today" the context uses for the demo data
 const NOT_CONNECTED_OUTCOMES = ["Not answered", "Busy", "Wrong number"];
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -27,8 +26,8 @@ function buildBuckets(calls: { date: string; outcome: string }[], timeframe: "to
     connected: !NOT_CONNECTED_OUTCOMES.includes(c.outcome),
   }));
 
-  // Latest day with data (or the demo "today"), so new calls always show up
-  let anchor = MOCK_TODAY;
+  // Real-time anchor: today's date
+  let anchor = ymd(new Date());
   for (const p of parsed) if (p.day > anchor) anchor = p.day;
   const [y, m, d] = anchor.split("-").map(Number);
   const anchorDate = new Date(y, m - 1, d);

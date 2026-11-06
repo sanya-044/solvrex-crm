@@ -10,7 +10,7 @@ export default function CallLogsPage() {
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
 
   const filteredCalls = calls.filter((c) => {
-    if (userRole === "Caller" && c.callerName !== activeCallerName) {
+    if (userRole === "Caller" && c.callerName?.toLowerCase() !== activeCallerName?.toLowerCase()) {
       return false;
     }
     if (filterOutcome !== "All" && c.outcome !== filterOutcome) {

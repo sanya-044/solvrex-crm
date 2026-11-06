@@ -8,6 +8,7 @@ import React, {
   useMemo,
   ReactNode,
 } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export type PipelineStage =
   | "Lead"
@@ -113,6 +114,18 @@ export interface CallerMember {
   email: string;
   role: "Caller" | "Manager" | "Admin";
   targetCallsPerDay: number;
+}
+
+export interface TeamMember {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: string;
+  isActive: boolean;
+  targetCallsPerDay: number;
+  assignedLeadsCount?: number;
+  callsMadeCount?: number;
 }
 
 export const CALLER_TEAM: CallerMember[] = [
@@ -540,6 +553,8 @@ const initialCalls: CallLog[] = [
 interface CRMContextType {
   leads: Lead[];
   calls: CallLog[];
+  teamMembers: TeamMember[];
+  refreshTeam: () => Promise<void>;
   selectedCallerFilter: string; // "All" or caller name
   setSelectedCallerFilter: (caller: string) => void;
   userRole: "Admin" | "Caller";
@@ -569,6 +584,7 @@ interface CRMContextType {
     conversionRate: number;
     pipelineCount: Record<PipelineStage, number>;
     followupsDueToday: Lead[];
+    followupsOverdue: Lead[];
     callerLeaderboard: {
       callerName: string;
       callsMade: number;
@@ -584,13 +600,40 @@ interface CRMContextType {
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export function CRMProvider({ children }: { children: ReactNode }) {
+  const { user: authUser } = useAuth();
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [calls, setCalls] = useState<CallLog[]>(initialCalls);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [selectedCallerFilter, setSelectedCallerFilter] = useState<string>("All");
   const [userRole, setUserRole] = useState<"Admin" | "Caller">("Admin");
   const [activeCallerName, setActiveCallerName] = useState<string>("Priya Sharma");
+
+  // Sync authenticated user with CRM identity & role
+  useEffect(() => {
+    if (authUser?.fullName) {
+      setActiveCallerName(authUser.fullName);
+      const roleUpper = (authUser.role || "").toUpperCase();
+      const mappedRole: "Admin" | "Caller" = roleUpper === "CALLER" ? "Caller" : "Admin";
+      setUserRole(mappedRole);
+    }
+  }, [authUser]);
+
+  // Load team members from database
+  const refreshTeam = async () => {
+    try {
+      const res = await fetch("/api/team", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.team && Array.isArray(data.team)) {
+          setTeamMembers(data.team);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load team from /api/team:", err);
+    }
+  };
 
   // Load from database on mount
   useEffect(() => {
@@ -615,6 +658,9 @@ export function CRMProvider({ children }: { children: ReactNode }) {
             setCalls(callsData.calls);
           }
         }
+
+        // Fetch team members
+        await refreshTeam();
       } catch (err) {
         console.warn("Could not load initial CRM data from database:", err);
       } finally {
@@ -856,13 +902,21 @@ export function CRMProvider({ children }: { children: ReactNode }) {
     return { added: addedCount, errors };
   };
 
-  // Compute Live Metrics
+  // Compute Live Metrics based on real calendar timestamps
   const stats = useMemo(() => {
-    const todayStr = "2026-11-03"; // Matches mock system date
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const currentMonthPrefix = todayStr.slice(0, 7); // YYYY-MM
 
-    const callsToday = calls.filter((c) => c.date.startsWith(todayStr)).length;
-    const callsThisWeek = calls.length; // Active mock set
-    const callsThisMonth = calls.length + 15;
+    // Calls made today directly from dates
+    const callsToday = calls.filter((c) => (c.date || "").slice(0, 10) === todayStr).length;
+
+    // Calls made within the last 7 calendar days
+    const callsThisWeek = calls.filter((c) => (c.date || "").slice(0, 10) >= sevenDaysAgo).length;
+
+    // Calls made in current calendar month
+    const callsThisMonth = calls.filter((c) => (c.date || "").startsWith(currentMonthPrefix)).length;
 
     const connectedCalls = calls.filter(
       (c) =>
@@ -890,16 +944,36 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       Lost: leads.filter((l) => l.pipeline === "Lost").length,
     };
 
+    // Follow-ups due strictly today
     const followupsDueToday = leads.filter((l) => l.followUpDate === todayStr);
 
-    // Leaderboard per caller
-    const callers = CALLER_TEAM.map((member) => {
-      const callerCalls = calls.filter((c) => c.callerName === member.name);
+    // Overdue follow-ups: date is in the past and lead has not yet reached Won or Lost
+    const followupsOverdue = leads.filter(
+      (l) =>
+        l.followUpDate &&
+        l.followUpDate < todayStr &&
+        l.pipeline !== "Won" &&
+        l.pipeline !== "Lost"
+    );
+
+    // Dynamic Leaderboard: compile all known caller names from DB team, static team, and logged calls
+    const allKnownCallers = Array.from(
+      new Set([
+        ...teamMembers.map((t) => t.fullName),
+        ...CALLER_TEAM.map((c) => c.name),
+        ...calls.map((c) => c.callerName).filter(Boolean),
+      ])
+    );
+
+    const callerLeaderboard = allKnownCallers.map((callerName) => {
+      const callerCalls = calls.filter(
+        (c) => c.callerName?.toLowerCase() === callerName.toLowerCase()
+      );
       const connected = callerCalls.filter(
         (c) =>
           c.outcome !== "Not answered" &&
           c.outcome !== "Busy" &&
-          c.outcome !== "Wrong number",
+          c.outcome !== "Wrong number"
       ).length;
       const meetingsBooked = callerCalls.filter((c) => c.outcome === "Meeting booked").length;
       const won = callerCalls.filter((c) => c.outcome === "Won").length;
@@ -907,7 +981,7 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       const convRate = connected > 0 ? Math.round(((meetingsBooked + won) / connected) * 100) : 0;
 
       return {
-        callerName: member.name,
+        callerName,
         callsMade: callerCalls.length,
         connected,
         meetingsBooked,
@@ -915,7 +989,7 @@ export function CRMProvider({ children }: { children: ReactNode }) {
         connectRate: cRate,
         conversionRate: convRate,
       };
-    }).sort((a, b) => b.won * 2 + b.meetingsBooked - (a.won * 2 + a.meetingsBooked));
+    }).sort((a, b) => b.won * 3 + b.meetingsBooked * 2 + b.connected - (a.won * 3 + a.meetingsBooked * 2 + a.connected));
 
     return {
       callsToday,
@@ -925,15 +999,18 @@ export function CRMProvider({ children }: { children: ReactNode }) {
       conversionRate,
       pipelineCount,
       followupsDueToday,
-      callerLeaderboard: callers,
+      followupsOverdue,
+      callerLeaderboard,
     };
-  }, [calls, leads]);
+  }, [calls, leads, teamMembers]);
 
   return (
     <CRMContext.Provider
       value={{
         leads,
         calls,
+        teamMembers,
+        refreshTeam,
         selectedCallerFilter,
         setSelectedCallerFilter,
         userRole,

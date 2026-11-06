@@ -6,14 +6,14 @@ import { useState } from "react";
 
 export default function FollowupsPage() {
   const { leads, updateLead, userRole, activeCallerName } = useCRM();
-  const [activeTab, setActiveTab] = useState<"today" | "all" | "high">("today");
+  const [activeTab, setActiveTab] = useState<"today" | "overdue" | "high" | "all">("today");
 
-  const todayStr = "2026-11-03";
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   // Filter based on role (Admin sees all, Caller sees only their leads)
   const accessibleLeads =
     userRole === "Caller"
-      ? leads.filter((l) => l.assignedCaller === activeCallerName)
+      ? leads.filter((l) => l.assignedCaller?.toLowerCase() === activeCallerName?.toLowerCase())
       : leads;
 
   const scheduledLeads = accessibleLeads.filter((l) => l.followUpDate);
@@ -33,8 +33,15 @@ export default function FollowupsPage() {
     return (a.followUpTime || "").localeCompare(b.followUpTime || "");
   });
 
+  const overdueLeads = sortedFollowups.filter(
+    (l) => l.followUpDate < todayStr && l.pipeline !== "Won" && l.pipeline !== "Lost"
+  );
+  const dueTodayLeads = sortedFollowups.filter((l) => l.followUpDate === todayStr);
+  const highPriorityLeads = sortedFollowups.filter((l) => l.priority === "High");
+
   const displayLeads = sortedFollowups.filter((l) => {
     if (activeTab === "today") return l.followUpDate === todayStr;
+    if (activeTab === "overdue") return l.followUpDate < todayStr && l.pipeline !== "Won" && l.pipeline !== "Lost";
     if (activeTab === "high") return l.priority === "High";
     return true;
   });
@@ -62,7 +69,7 @@ export default function FollowupsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 w-fit text-xs gap-1">
+      <div className="flex flex-wrap bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 w-fit text-xs gap-1">
         <button
           type="button"
           onClick={() => setActiveTab("today")}
@@ -73,7 +80,20 @@ export default function FollowupsPage() {
           }`}
         >
           <span>🔥</span>
-          <span>Due Today ({sortedFollowups.filter((l) => l.followUpDate === todayStr).length})</span>
+          <span>Due Today ({dueTodayLeads.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("overdue")}
+          className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 ${
+            activeTab === "overdue"
+              ? "bg-rose-500 text-white shadow"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          <span>⏰</span>
+          <span>Overdue ({overdueLeads.length})</span>
         </button>
 
         <button
@@ -86,7 +106,7 @@ export default function FollowupsPage() {
           }`}
         >
           <span>🚨</span>
-          <span>High Priority ({sortedFollowups.filter((l) => l.priority === "High").length})</span>
+          <span>High Priority ({highPriorityLeads.length})</span>
         </button>
 
         <button
@@ -156,6 +176,20 @@ export default function FollowupsPage() {
               >
                 <span>📞 Call Now</span>
               </Link>
+
+              {lead.phone && (
+                <a
+                  href={`https://wa.me/${lead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    `Hi ${lead.contactPerson || lead.name}, this is ${activeCallerName} from Solvrex. Following up on our scheduled discussion!`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition flex items-center justify-center"
+                  title="Chat on WhatsApp"
+                >
+                  💬
+                </a>
+              )}
 
               <button
                 type="button"

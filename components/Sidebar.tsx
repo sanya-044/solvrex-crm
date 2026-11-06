@@ -2,10 +2,17 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useCRM, CALLER_TEAM } from "@/context/CRMContent";
 
-export default function Sidebar() {
+export default function Sidebar({
+  isOpen,
+  onClose,
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -14,8 +21,20 @@ export default function Sidebar() {
     setUserRole,
     activeCallerName,
     setActiveCallerName,
+    teamMembers,
     stats,
   } = useCRM();
+
+  const callerList = useMemo(() => {
+    const list: { name: string; role: string }[] = [];
+    teamMembers.forEach((t) => list.push({ name: t.fullName, role: t.role }));
+    CALLER_TEAM.forEach((c) => {
+      if (!list.some((item) => item.name.toLowerCase() === c.name.toLowerCase())) {
+        list.push({ name: c.name, role: c.role });
+      }
+    });
+    return list;
+  }, [teamMembers]);
 
   const navItems = [
     {
@@ -48,8 +67,16 @@ export default function Sidebar() {
       name: "Follow-ups Due",
       href: "/followups",
       icon: "📅",
-      badge: stats.followupsDueToday.length > 0 ? `${stats.followupsDueToday.length}` : null,
-      badgeColor: "bg-red-500/20 text-red-300 border-red-500/30",
+      badge:
+        stats.followupsDueToday.length > 0
+          ? `${stats.followupsDueToday.length}`
+          : stats.followupsOverdue?.length > 0
+          ? `${stats.followupsOverdue.length} overdue`
+          : null,
+      badgeColor:
+        stats.followupsOverdue?.length > 0
+          ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+          : "bg-red-500/20 text-red-300 border-red-500/30",
     },
     {
       name: "Templates & Scripts",
@@ -58,13 +85,24 @@ export default function Sidebar() {
       badge: "Hindi/Eng",
       badgeColor: "bg-sky-500/20 text-sky-300 border-sky-500/30",
     },
+    {
+      name: "Team & Callers",
+      href: "/team",
+      icon: "👥",
+      badge: teamMembers.length > 0 ? `${teamMembers.length}` : "Admin",
+      badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    },
   ];
 
   return (
-    <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col justify-between shrink-0 select-none">
-      <div>
+    <aside
+      className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col justify-between shrink-0 select-none transition-transform duration-200 ease-in-out ${
+        isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"
+      }`}
+    >
+      <div className="overflow-y-auto">
         {/* Brand Header */}
-        <div className="p-4 border-b border-zinc-800/80">
+        <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-200 flex items-center justify-center text-black font-black text-lg shadow-md shadow-amber-500/20">
               S
@@ -79,6 +117,17 @@ export default function Sidebar() {
               </span>
             </div>
           </div>
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="md:hidden text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition"
+              aria-label="Close sidebar"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Interactive Role & Caller Switcher */}
@@ -131,8 +180,8 @@ export default function Sidebar() {
               onChange={(e) => setActiveCallerName(e.target.value)}
               className="w-full text-xs bg-zinc-900 border border-zinc-700/80 rounded px-2 py-1 text-zinc-200 outline-none focus:border-amber-400"
             >
-              {CALLER_TEAM.map((c) => (
-                <option key={c.id} value={c.name}>
+              {callerList.map((c) => (
+                <option key={c.name} value={c.name}>
                   {c.name} ({c.role})
                 </option>
               ))}
@@ -150,6 +199,7 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={onClose}
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-amber-400/10 text-amber-300 border border-amber-500/30 shadow-sm"
@@ -174,7 +224,7 @@ export default function Sidebar() {
       </div>
 
       {/* User Footer & Logout */}
-      <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/40">
+      <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/40 shrink-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-bold text-amber-300 border border-zinc-600">
@@ -185,7 +235,7 @@ export default function Sidebar() {
                 {activeCallerName}
               </p>
               <p className="text-[10px] text-zinc-500 truncate">
-                {user?.email || "active@solvrex.com"}
+                {user?.email || "admin@solvrex.com"}
               </p>
             </div>
           </div>
