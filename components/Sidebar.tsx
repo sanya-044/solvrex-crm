@@ -64,6 +64,13 @@ export default function Sidebar({
       badgeColor: "bg-amber-500/20 text-amber-300 border-amber-500/30",
     },
     {
+      name: "WhatsApp Console",
+      href: "/whatsapp",
+      icon: "💬",
+      badge: "Meta API",
+      badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    },
+    {
       name: "Follow-ups Due",
       href: "/followups",
       icon: "📅",

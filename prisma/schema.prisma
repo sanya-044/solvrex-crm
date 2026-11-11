@@ -151,8 +151,45 @@ model Lead {
   createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   calls              Call[]
+  whatsappConversations WhatsAppConversation[]
 
   @@index([assignedCaller], map: "idx_leads_assigned_caller")
   @@index([pipeline], map: "idx_leads_pipeline")
   @@map("leads")
+}
+
+model WhatsAppConversation {
+  id              String            @id @default(cuid())
+  leadId          String?           @map("lead_id")
+  leadName        String            @map("lead_name") @db.VarChar(255)
+  phoneNumber     String            @map("phone_number") @db.VarChar(50)
+  assignedCaller  String?           @map("assigned_caller") @db.VarChar(100)
+  lastMessageText String?           @map("last_message_text")
+  lastMessageAt   DateTime          @default(now()) @map("last_message_at") @db.Timestamptz(6)
+  unreadCount     Int               @default(0) @map("unread_count")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  lead            Lead?             @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  messages        WhatsAppMessage[]
+
+  @@index([phoneNumber], map: "idx_wa_conversations_phone")
+  @@index([leadId], map: "idx_wa_conversations_lead_id")
+  @@index([assignedCaller], map: "idx_wa_conversations_assigned")
+  @@map("whatsapp_conversations")
+}
+
+model WhatsAppMessage {
+  id             String               @id @default(cuid())
+  conversationId String               @map("conversation_id")
+  senderType     String               @default("OUTBOUND") @map("sender_type") @db.VarChar(20)
+  senderName     String?              @map("sender_name") @db.VarChar(100)
+  text           String               @map("text")
+  status         String               @default("SENT") @map("status") @db.VarChar(20)
+  waMessageId    String?              @map("wa_message_id") @db.VarChar(150)
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  conversation   WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId], map: "idx_wa_messages_conversation_id")
+  @@index([waMessageId], map: "idx_wa_messages_wamid")
+  @@map("whatsapp_messages")
 }
