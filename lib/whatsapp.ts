@@ -175,3 +175,4 @@ export function parseWhatsAppWebhook(body: Record<string, unknown>): {
 
   return { messages, statuses };
 }
+
