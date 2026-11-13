@@ -1,0 +1,151 @@
+/* =====================================================================
+   LIVE ENTERPRISE ANIMATIONS FOR PIPELINE FUNNEL & DONUT CHART
+   ===================================================================== */
+
+/* Funnel Tiers: Entrance + Continuous Subtle Ambient Float */
+.funnelTier {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    funnelTierEnter 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    funnelBreathing 4s ease-in-out infinite alternate;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease, opacity 0.2s ease;
+}
+
+.funnelTier:hover {
+  transform: scale(1.035) translateY(-1px);
+}
+
+.funnelStage,
+.donutLegendItem {
+  animation: chartLabelEnter 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: all 0.2s ease;
+}
+
+/* Donut Chart Arcs: Smooth Draw-in + Continuous Cyber Pulse */
+.donutArc {
+  animation: donutArcDraw 1000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: center;
+  transition: stroke-width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease, opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.convertedArc {
+  --arc-length: 228;
+  animation-delay: 100ms;
+}
+
+.qualifiedArc {
+  --arc-length: 65;
+  animation-delay: 240ms;
+}
+
+.rawArc {
+  --arc-length: 33;
+  animation-delay: 380ms;
+}
+
+/* Live Floating Ambient Donut Ring */
+.donutGlowRing {
+  animation: donutGlowPulse 3.5s ease-in-out infinite alternate;
+}
+
+/* Center Donut Badge Pulse */
+.centerCounterPulse {
+  animation: centerBadgePulse 3s ease-in-out infinite alternate;
+}
+
+/* Pipeline Flow Shimmer Wave */
+.funnelFlowWave {
+  animation: funnelFlow 2.8s linear infinite;
+}
+
+@keyframes funnelTierEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes funnelBreathing {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(6, 182, 212, 0.2));
+  }
+  100% {
+    filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.4));
+  }
+}
+
+@keyframes funnelFlow {
+  0% {
+    stop-color: rgba(255, 255, 255, 0);
+    offset: 0%;
+  }
+  50% {
+    stop-color: rgba(255, 255, 255, 0.35);
+    offset: 50%;
+  }
+  100% {
+    stop-color: rgba(255, 255, 255, 0);
+    offset: 100%;
+  }
+}
+
+@keyframes chartLabelEnter {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes donutArcDraw {
+  from {
+    stroke-dasharray: 0 327;
+  }
+  to {
+    stroke-dasharray: var(--arc-length) 327;
+  }
+}
+
+@keyframes donutGlowPulse {
+  0% {
+    filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.45));
+  }
+  100% {
+    filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.4));
+  }
+}
+
+@keyframes centerBadgePulse {
+  0% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .funnelTier,
+  .funnelStage,
+  .donutArc,
+  .donutLegendItem,
+  .donutGlowRing,
+  .centerCounterPulse,
+  .funnelFlowWave {
+    animation: none !important;
+    transform: none !important;
+  }
+}
