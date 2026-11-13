@@ -83,7 +83,7 @@ export default function TeamManagementPage() {
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-amber-500/20 transition transform hover:scale-[1.02]"
+            className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-500/25 transition transform hover:scale-[1.02]"
           >
             <span>➕</span>
             <span>Add New Caller / Team Member</span>
@@ -93,7 +93,7 @@ export default function TeamManagementPage() {
 
       {/* Role notice for Callers */}
       {userRole !== "Admin" && (
-        <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-800/50 text-amber-300 text-xs flex items-center gap-2">
+        <div className="p-4 rounded-xl bg-cyan-950/30 border border-cyan-800/50 text-cyan-300 text-xs flex items-center gap-2">
           <span>ℹ️</span>
           <span>You are viewing in Caller View. Creating or modifying team members requires Admin role permissions.</span>
         </div>
@@ -113,12 +113,12 @@ export default function TeamManagementPage() {
         </div>
         <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl">
           <span className="text-xs text-zinc-400 block font-medium">Admins / Managers</span>
-          <span className="text-2xl font-black text-amber-400 mt-1 block">{managersCount}</span>
+          <span className="text-2xl font-black text-cyan-400 mt-1 block">{managersCount}</span>
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Full supervisory rights</span>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl">
           <span className="text-xs text-zinc-400 block font-medium">Current Caller</span>
-          <span className="text-sm font-bold text-sky-400 mt-2 block truncate">{activeCallerName}</span>
+          <span className="text-sm font-bold text-cyan-300 mt-2 block truncate">{activeCallerName}</span>
           <span className="text-[11px] text-zinc-500 block truncate">({userRole} role active)</span>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function TeamManagementPage() {
                   {/* Name & Email */}
                   <td className="p-3.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-amber-300">
+                      <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700/80 flex items-center justify-center font-bold text-cyan-300 shadow-sm">
                         {member.fullName.charAt(0)}
                       </div>
                       <div>
@@ -171,12 +171,12 @@ export default function TeamManagementPage() {
                   {/* System Role */}
                   <td className="p-3.5">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
                         member.role?.toUpperCase() === "ADMIN"
-                          ? "bg-amber-950/70 text-amber-300 border-amber-800"
+                          ? "bg-cyan-950/70 text-cyan-300 border-cyan-700/70 shadow-[0_0_8px_rgba(8,199,233,0.2)]"
                           : member.role?.toUpperCase() === "MANAGER"
-                          ? "bg-purple-950/70 text-purple-300 border-purple-800"
-                          : "bg-emerald-950/70 text-emerald-300 border-emerald-800"
+                          ? "bg-purple-950/70 text-purple-300 border-purple-700/70"
+                          : "bg-emerald-950/70 text-emerald-300 border-emerald-700/70"
                       }`}
                     >
                       {member.role}
@@ -200,7 +200,7 @@ export default function TeamManagementPage() {
 
                   {/* Calls Logged */}
                   <td className="p-3.5">
-                    <span className="font-bold text-amber-400">{member.callsMadeCount ?? 0}</span>
+                    <span className="font-bold text-cyan-400">{member.callsMadeCount ?? 0}</span>
                     <span className="text-zinc-500 text-[10px] ml-1">calls</span>
                   </td>
 
@@ -270,7 +270,7 @@ export default function TeamManagementPage() {
                   placeholder="e.g. Sanya Gupta"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export default function TeamManagementPage() {
                   placeholder="sanya@solvrex.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 />
               </div>
 
@@ -294,7 +294,7 @@ export default function TeamManagementPage() {
                   placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 />
               </div>
 
@@ -307,7 +307,7 @@ export default function TeamManagementPage() {
                   placeholder="+91 98765 43210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400 font-mono"
                 />
                 <span className="text-[10px] text-zinc-500 mt-1 block">
                   Telephony calls will ring this phone first before bridging with the lead.
@@ -319,7 +319,7 @@ export default function TeamManagementPage() {
                 <select
                   value={roleName}
                   onChange={(e) => setRoleName(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 >
                   <option value="CALLER">CALLER (Sees only assigned leads &amp; followups)</option>
                   <option value="MANAGER">MANAGER (Can view all calls, leads, and analytics)</option>
@@ -338,7 +338,7 @@ export default function TeamManagementPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold hover:from-amber-300 hover:to-amber-400 transition shadow disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold transition shadow-[0_0_12px_rgba(16,185,129,0.3)] disabled:opacity-50"
                 >
                   {isSubmitting ? "Creating..." : "Create Team Member"}
                 </button>

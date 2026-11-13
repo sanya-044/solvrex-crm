@@ -264,7 +264,7 @@ export default function WhatsAppConsolePage() {
           <button
             type="button"
             onClick={() => setShowNewChatModal(true)}
-            className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow-sm"
+            className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-xl transition shadow-[0_0_12px_rgba(16,185,129,0.3)]"
           >
             <span>➕</span>
             <span className="hidden sm:inline">Start Chat with Lead</span>
@@ -287,7 +287,7 @@ export default function WhatsAppConsolePage() {
                 placeholder="Search conversations, numbers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 outline-none focus:border-amber-400"
+                className="w-full pl-8 pr-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 outline-none focus:border-cyan-400"
               />
             </div>
 
@@ -309,7 +309,7 @@ export default function WhatsAppConsolePage() {
                 onClick={() => setFilterTab("unread")}
                 className={`px-3 py-1 rounded-lg font-bold transition flex items-center gap-1 ${
                   filterTab === "unread"
-                    ? "bg-amber-400 text-black"
+                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-[0_0_10px_rgba(8,199,233,0.35)] border border-cyan-400/50"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -336,12 +336,12 @@ export default function WhatsAppConsolePage() {
                   }}
                   className={`p-3.5 flex items-start gap-3 cursor-pointer transition ${
                     isSelected
-                      ? "bg-amber-400/10 border-l-4 border-amber-400"
+                      ? "bg-cyan-950/40 border-l-4 border-cyan-400 shadow-[inset_0_0_15px_rgba(8,199,233,0.1)]"
                       : "hover:bg-zinc-800/40"
                   }`}
                 >
                   {/* Lead Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-amber-300 shrink-0 text-sm shadow-sm">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-cyan-300 shrink-0 text-sm shadow-sm">
                     {conv.leadName.charAt(0)}
                   </div>
 
@@ -408,7 +408,7 @@ export default function WhatsAppConsolePage() {
                         {activeConversation.leadName}
                       </h2>
                       {associatedLead?.pipeline && (
-                        <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-500/30">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-950/60 text-cyan-300 border border-cyan-500/40 shadow-[0_0_8px_rgba(8,199,233,0.2)]">
                           {associatedLead.pipeline}
                         </span>
                       )}
@@ -452,7 +452,7 @@ export default function WhatsAppConsolePage() {
                     onClick={() => setShowRightDrawer((prev) => !prev)}
                     className={`p-2 rounded-xl text-xs font-semibold border transition ${
                       showRightDrawer
-                        ? "bg-amber-400/10 text-amber-300 border-amber-500/30"
+                        ? "bg-cyan-950/50 text-cyan-300 border-cyan-500/40 shadow-[0_0_10px_rgba(8,199,233,0.25)]"
                         : "bg-zinc-800 text-zinc-400 border-zinc-700"
                     }`}
                     title="Toggle Lead Details Drawer"
@@ -483,8 +483,8 @@ export default function WhatsAppConsolePage() {
                       <div
                         className={`max-w-md sm:max-w-lg p-3 rounded-2xl text-xs leading-relaxed space-y-1 shadow-md ${
                           isOutbound
-                            ? "bg-emerald-950 text-emerald-100 border border-emerald-800/60 rounded-tr-none"
-                            : "bg-zinc-900 text-zinc-200 border border-zinc-800 rounded-tl-none"
+                            ? "bg-gradient-to-br from-emerald-950/90 via-teal-950/80 to-zinc-900 text-emerald-100 border border-emerald-600/40 rounded-tr-none shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
+                            : "bg-zinc-900 text-zinc-200 border border-zinc-800/80 rounded-tl-none shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
                         }`}
                       >
                         {/* Sender Label */}
@@ -526,7 +526,7 @@ export default function WhatsAppConsolePage() {
                     key={tmpl.id}
                     type="button"
                     onClick={() => handleInsertTemplate(tmpl)}
-                    className="px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-amber-400 text-zinc-300 hover:text-white text-[11px] whitespace-nowrap transition font-medium"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-cyan-400 text-zinc-300 hover:text-cyan-300 text-[11px] whitespace-nowrap transition font-medium"
                     title={tmpl.content}
                   >
                     {tmpl.title}
@@ -551,14 +551,14 @@ export default function WhatsAppConsolePage() {
                         handleSendMessage();
                       }
                     }}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 outline-none focus:border-amber-400 resize-none"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 outline-none focus:border-cyan-400 resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={!messageInput.trim() || isSending}
-                  className="px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-black text-xs rounded-xl transition shadow flex items-center gap-1.5 disabled:opacity-40 shrink-0"
+                  className="px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl transition shadow-[0_2px_12px_rgba(16,185,129,0.3)] flex items-center gap-1.5 disabled:opacity-40 shrink-0"
                 >
                   <span>✈️</span>
                   <span>{isSending ? "Sending..." : "Send"}</span>
@@ -620,7 +620,7 @@ export default function WhatsAppConsolePage() {
             <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1.5 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400">Google Rating:</span>
-                <span className="font-bold text-amber-300">
+                <span className="font-bold text-cyan-400">
                   ⭐ {associatedLead.googleRating || 4.5} ({associatedLead.googleReviewsCount || 100} reviews)
                 </span>
               </div>
@@ -631,7 +631,7 @@ export default function WhatsAppConsolePage() {
                     href={associatedLead.websiteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-amber-400 hover:underline truncate max-w-[160px]"
+                    className="text-cyan-400 hover:underline truncate max-w-[160px]"
                   >
                     {associatedLead.websiteUrl}
                   </a>
@@ -651,7 +651,7 @@ export default function WhatsAppConsolePage() {
                     prev?.lead ? { ...prev, lead: { ...prev.lead, pipeline: newStage } } : prev
                   );
                 }}
-                className="w-full px-2.5 py-1.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white outline-none focus:border-amber-400 font-semibold"
+                className="w-full px-2.5 py-1.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white outline-none focus:border-cyan-400 font-semibold"
               >
                 <option value="Lead">Lead</option>
                 <option value="Contacted">Contacted</option>
@@ -667,7 +667,7 @@ export default function WhatsAppConsolePage() {
             <div className="p-3.5 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1.5 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-semibold">Scheduled Follow-up:</span>
-                <span className="text-amber-400 font-mono font-bold">
+                <span className="text-cyan-400 font-mono font-bold">
                   {associatedLead.followUpDate || "None set"}
                 </span>
               </div>
@@ -729,7 +729,7 @@ export default function WhatsAppConsolePage() {
                   required
                   value={selectedLeadIdForNewChat}
                   onChange={(e) => setSelectedLeadIdForNewChat(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 >
                   <option value="">-- Choose a Lead --</option>
                   {leads.map((l) => (
@@ -749,7 +749,7 @@ export default function WhatsAppConsolePage() {
                   placeholder="Hello! Following up regarding your inquiry..."
                   value={newChatInitialMessage}
                   onChange={(e) => setNewChatInitialMessage(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400 resize-none"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400 resize-none"
                 />
               </div>
 
@@ -757,14 +757,14 @@ export default function WhatsAppConsolePage() {
                 <button
                   type="button"
                   onClick={() => setShowNewChatModal(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 font-semibold hover:bg-zinc-700 transition"
+                  className="px-4 py-2 rounded-xl bg-zinc-800/80 text-zinc-300 font-semibold hover:bg-zinc-750 border border-zinc-700/80 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!selectedLeadIdForNewChat}
-                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold transition shadow disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold transition shadow-[0_2px_12px_rgba(16,185,129,0.3)] disabled:opacity-50"
                 >
                   Start Conversation
                 </button>

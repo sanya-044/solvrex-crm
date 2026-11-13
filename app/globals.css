@@ -145,6 +145,7 @@ body {
    - Charcoal Black:     #171A20
    - Graphite:           #292E36
    - Chrome Highlights:  #F0F2F5
+   - Electric Cyan:      #08C7E9
    ===================================================================== */
 
 /* Deep Charcoal & Graphite Canvas with Visible Brushed Silver Luster */
@@ -255,4 +256,117 @@ body {
   pointer-events: none;
   z-index: 2;
   opacity: 0.95;
+}
+
+/* =====================================================================
+   GLOBAL METALLIC GUNMETAL APPLIED TO ALL CRM PAGES
+   Inherits the exact theme from Active Call Workspace across:
+   - Tasks & Follow-ups (/followups)
+   - Call Logs & Audio (/calls)
+   - Templates (/templates)
+   - WhatsApp Console (/whatsapp)
+   - Team & Callers (/team)
+   ===================================================================== */
+
+/* Cards, Panels & Outer Wrappers */
+.crm-canvas :is([class~="bg-zinc-900"], [class~="bg-zinc-900/90"], [class~="bg-zinc-900/80"], [class~="bg-zinc-900/50"]):not(button):not(a):not(input):not(select):not(textarea) {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.018) 0,
+      rgba(255, 255, 255, 0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(112deg, #1a2029 0%, #343b44 23%, #222933 48%, #383e47 68%, #171d26 100%) !important;
+  border-color: rgba(183, 197, 211, 0.32) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* Recessed Inner Containers, Timing Boxes, Code/Template Previews */
+.crm-canvas :is([class~="bg-zinc-950"], [class~="bg-zinc-950/70"], [class~="bg-zinc-950/80"], [class~="bg-zinc-950/90"]):not(button):not(a):not(input):not(select):not(textarea) {
+  background:
+    linear-gradient(110deg, rgba(120, 134, 148, 0.08), transparent 36%, rgba(196, 209, 222, 0.05) 62%, transparent 82%),
+    linear-gradient(180deg, #111821 0%, #0b1119 100%) !important;
+  border-color: rgba(183, 197, 211, 0.24) !important;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Inputs, Selects & Textareas */
+.crm-canvas input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.crm-canvas select,
+.crm-canvas textarea {
+  background-color: #12161f !important;
+  background-image: linear-gradient(180deg, #141922 0%, #0e1218 100%) !important;
+  border-color: rgba(183, 197, 211, 0.35) !important;
+  color: #f3f6fa !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-canvas input:focus,
+.crm-canvas select:focus,
+.crm-canvas textarea:focus {
+  outline: none !important;
+  border-color: #08c7e9 !important;
+  box-shadow: 0 0 0 3px rgba(8, 199, 233, 0.28), inset 0 1px 3px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Tables (Call Logs, Team, Leads) */
+.crm-canvas table thead,
+.crm-canvas table thead tr {
+  background: linear-gradient(180deg, #272f3a 0%, #1a212b 100%) !important;
+  border-bottom: 1px solid rgba(183, 197, 211, 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.crm-canvas table thead th {
+  color: #cbd5e1 !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.crm-canvas table tbody tr {
+  border-bottom: 1px solid rgba(183, 197, 211, 0.15) !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-canvas table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Secondary / Brushed Steel Ghost Buttons */
+.crm-canvas :is(button, a)[class~="bg-zinc-800"],
+.crm-canvas :is(button, a)[class~="bg-zinc-800/80"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+    linear-gradient(145deg, #323b47 0%, #222933 100%) !important;
+  border: 1px solid rgba(183, 197, 211, 0.35) !important;
+  color: #f1f5f9 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.crm-canvas :is(button, a)[class~="bg-zinc-800"]:hover,
+.crm-canvas :is(button, a)[class~="bg-zinc-800/80"]:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+    linear-gradient(145deg, #414a55 0%, #2d3642 100%) !important;
+  border-color: rgba(220, 230, 240, 0.55) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Beveled Metallic Status Badges */
+.crm-canvas span.rounded-full,
+.crm-canvas span.rounded-md.border {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.35);
 }
