@@ -130,3 +130,243 @@ body {
 .btn-ghost:hover {
   background: var(--color-zinc-800);
 }
+
+/* =====================================================================
+   PREMIUM CYBER-ENTERPRISE GLASSMORPHISM UTILITIES
+   ===================================================================== */
+
+/* =====================================================================
+   PREMIUM METALLIC SILVER, BRUSHED ALUMINIUM & TITANIUM THEME
+   Palette:
+   - Metallic Silver:    #C0C0C0
+   - Brushed Aluminium:  #AEB5BF
+   - Platinum:           #E5E4E2
+   - Titanium Grey:      #717985
+   - Charcoal Black:     #171A20
+   - Graphite:           #292E36
+   - Chrome Highlights:  #F0F2F5
+   - Electric Cyan:      #08C7E9
+   ===================================================================== */
+
+/* Deep Charcoal & Graphite Canvas with Visible Brushed Silver Luster */
+.crm-canvas {
+  background-color: #141820;
+  background-image:
+    /* Top prominent platinum-chrome specular sheen */
+    radial-gradient(ellipse 110% 50% at 50% -8%, rgba(240, 242, 245, 0.20), transparent 60%),
+    /* Mid-left brushed silver ambient reflection */
+    radial-gradient(ellipse 70% 45% at 10% 30%, rgba(192, 192, 192, 0.14), transparent 55%),
+    /* Mid-right titanium metallic luster */
+    radial-gradient(ellipse 80% 45% at 90% 65%, rgba(174, 181, 191, 0.12), transparent 55%),
+    /* Bottom metallic horizon reflection */
+    radial-gradient(ellipse 90% 40% at 50% 100%, rgba(192, 192, 192, 0.16), transparent 65%),
+    /* Base rich titanium & silver metallic gradient */
+    linear-gradient(145deg, #202733 0%, #171c24 45%, #101319 100%);
+  background-attachment: fixed;
+}
+
+/* Subtle Chrome Top Curved Ambient Line */
+.silver-top-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 110px;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+  opacity: 0.30;
+}
+
+/* Bottom ambient metallic shimmer */
+.crm-bottom-shimmer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(to top, rgba(50, 60, 75, 0.30) 0%, rgba(192, 192, 192, 0.08) 45%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Luxurious Brushed Aluminium & Metallic Silver Panel */
+.glass-panel {
+  position: relative;
+  background:
+    /* Prominent brushed aluminium & platinum surface sheen */
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(192, 192, 192, 0.08) 28%, rgba(174, 181, 191, 0.03) 60%, rgba(240, 242, 245, 0.09) 100%),
+    /* Directional metallic silver diagonal luster */
+    radial-gradient(ellipse 110% 70% at 88% -5%, rgba(255, 255, 255, 0.22) 0%, rgba(192, 192, 192, 0.12) 35%, rgba(113, 121, 133, 0.05) 65%, transparent 80%),
+    /* Base metallic silver-titanium body */
+    linear-gradient(145deg, #323b49 0%, #242c37 50%, #181d25 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(192, 192, 192, 0.45);
+  border-top: 1.5px solid #ffffff;
+  border-left: 1.5px solid rgba(229, 228, 226, 0.65);
+  border-right: 1px solid rgba(174, 181, 191, 0.38);
+  box-shadow:
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -1px 1.5px 0 rgba(0, 0, 0, 0.65),
+    0 14px 34px -4px rgba(0, 0, 0, 0.80),
+    0 0 20px 0 rgba(192, 192, 192, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel:hover {
+  transform: translateY(-1.5px);
+  border-color: rgba(229, 228, 226, 0.60);
+  border-top-color: #ffffff;
+  box-shadow:
+    inset 0 2px 3px 0 rgba(255, 255, 255, 0.55),
+    0 18px 40px -4px rgba(0, 0, 0, 0.88),
+    0 0 24px 0 rgba(192, 192, 192, 0.20);
+}
+
+/* Polished Chrome Top Rim Specular Highlight */
+.glass-rim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(174, 181, 191, 0.35) 12%,
+    rgba(229, 228, 226, 0.85) 40%,
+    #ffffff 60%,
+    #F0F2F5 75%,
+    rgba(192, 192, 192, 0.55) 88%,
+    transparent 100%
+  );
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+  pointer-events: none;
+  z-index: 3;
+}
+/* Brushed Silver-Aluminium Specular Corner Flare */
+.silver-corner-shine {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 145px;
+  height: 80px;
+  background: radial-gradient(ellipse 95% 75% at 94% 0%, rgba(255, 255, 255, 0.28) 0%, rgba(229, 228, 226, 0.14) 35%, rgba(192, 192, 192, 0.06) 60%, transparent 80%);
+  border-top-right-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.95;
+}
+
+/* =====================================================================
+   GLOBAL METALLIC GUNMETAL APPLIED TO ALL CRM PAGES
+   Inherits the exact theme from Active Call Workspace across:
+   - Tasks & Follow-ups (/followups)
+   - Call Logs & Audio (/calls)
+   - Templates (/templates)
+   - WhatsApp Console (/whatsapp)
+   - Team & Callers (/team)
+   ===================================================================== */
+
+/* Cards, Panels & Outer Wrappers */
+.crm-canvas :is([class~="bg-zinc-900"], [class~="bg-zinc-900/90"], [class~="bg-zinc-900/80"], [class~="bg-zinc-900/50"]):not(button):not(a):not(input):not(select):not(textarea) {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.018) 0,
+      rgba(255, 255, 255, 0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(112deg, #1a2029 0%, #343b44 23%, #222933 48%, #383e47 68%, #171d26 100%) !important;
+  border-color: rgba(183, 197, 211, 0.32) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* Recessed Inner Containers, Timing Boxes, Code/Template Previews */
+.crm-canvas :is([class~="bg-zinc-950"], [class~="bg-zinc-950/70"], [class~="bg-zinc-950/80"], [class~="bg-zinc-950/90"]):not(button):not(a):not(input):not(select):not(textarea) {
+  background:
+    linear-gradient(110deg, rgba(120, 134, 148, 0.08), transparent 36%, rgba(196, 209, 222, 0.05) 62%, transparent 82%),
+    linear-gradient(180deg, #111821 0%, #0b1119 100%) !important;
+  border-color: rgba(183, 197, 211, 0.24) !important;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Inputs, Selects & Textareas */
+.crm-canvas input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.crm-canvas select,
+.crm-canvas textarea {
+  background-color: #12161f !important;
+  background-image: linear-gradient(180deg, #141922 0%, #0e1218 100%) !important;
+  border-color: rgba(183, 197, 211, 0.35) !important;
+  color: #f3f6fa !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-canvas input:focus,
+.crm-canvas select:focus,
+.crm-canvas textarea:focus {
+  outline: none !important;
+  border-color: #08c7e9 !important;
+  box-shadow: 0 0 0 3px rgba(8, 199, 233, 0.28), inset 0 1px 3px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Tables (Call Logs, Team, Leads) */
+.crm-canvas table thead,
+.crm-canvas table thead tr {
+  background: linear-gradient(180deg, #272f3a 0%, #1a212b 100%) !important;
+  border-bottom: 1px solid rgba(183, 197, 211, 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.crm-canvas table thead th {
+  color: #cbd5e1 !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.crm-canvas table tbody tr {
+  border-bottom: 1px solid rgba(183, 197, 211, 0.15) !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-canvas table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Secondary / Brushed Steel Ghost Buttons */
+.crm-canvas :is(button, a)[class~="bg-zinc-800"],
+.crm-canvas :is(button, a)[class~="bg-zinc-800/80"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+    linear-gradient(145deg, #323b47 0%, #222933 100%) !important;
+  border: 1px solid rgba(183, 197, 211, 0.35) !important;
+  color: #f1f5f9 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.crm-canvas :is(button, a)[class~="bg-zinc-800"]:hover,
+.crm-canvas :is(button, a)[class~="bg-zinc-800/80"]:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+    linear-gradient(145deg, #414a55 0%, #2d3642 100%) !important;
+  border-color: rgba(220, 230, 240, 0.55) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Beveled Metallic Status Badges */
+.crm-canvas span.rounded-full,
+.crm-canvas span.rounded-md.border {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+}

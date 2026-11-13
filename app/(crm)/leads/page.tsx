@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useCRM, Lead, PipelineStage, CALLER_TEAM } from "@/context/CRMContent";
+import { useCRM, Lead, CALLER_TEAM } from "@/context/CRMContent";
 import Link from "next/link";
+import styles from "./leads.module.css";
 
 export default function LeadsPage() {
   const {
@@ -123,27 +124,27 @@ export default function LeadsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <main className={styles.page}>
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-5">
+      <header className={styles.header}>
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">
+          <h1 className={styles.title}>
             Lead Management Directory
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <p className={styles.description}>
             Browse, reassign, search, and trigger calls for prospect accounts.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className={styles.headerActions}>
           {/* CSV Import */}
           <button
             type="button"
             onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-750 text-xs font-semibold text-zinc-300 transition"
+            className={styles.secondaryAction}
           >
-            <span>📥</span>
+            <span aria-hidden="true">↓</span>
             <span>Import CSV</span>
           </button>
 
@@ -151,9 +152,9 @@ export default function LeadsPage() {
           <button
             type="button"
             onClick={exportLeadsCSV}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-750 text-xs font-semibold text-zinc-300 transition"
+            className={styles.secondaryAction}
           >
-            <span>📤</span>
+            <span aria-hidden="true">↑</span>
             <span>Export CSV</span>
           </button>
 
@@ -161,40 +162,42 @@ export default function LeadsPage() {
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold transition shadow-lg shadow-amber-400/20"
+            className={styles.primaryAction}
           >
-            <span>+</span>
+            <span aria-hidden="true">+</span>
             <span>Add New Lead</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Filter and Search Controls */}
-      <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+      <section className={styles.filterPanel} aria-label="Filter leads">
+        <div className={styles.filterGrid}>
           {/* Search Input */}
-          <div className="lg:col-span-2">
-            <label className="text-[11px] text-zinc-400 block mb-1">
+          <div className={styles.searchField}>
+            <label className={styles.filterLabel} htmlFor="lead-search">
               Search by Business, Contact, or Phone:
             </label>
             <input
+              id="lead-search"
               type="text"
               placeholder="e.g. Cafe, Priya, +91 98..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700/80 text-white outline-none focus:border-amber-400"
+              className={styles.filterControl}
             />
           </div>
 
           {/* Stage Filter */}
-          <div>
-            <label className="text-[11px] text-zinc-400 block mb-1">
+          <div className={styles.filterField}>
+            <label className={styles.filterLabel} htmlFor="lead-stage">
               Pipeline Stage:
             </label>
             <select
+              id="lead-stage"
               value={stageFilter}
               onChange={(e) => setStageFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700/80 text-white outline-none focus:border-amber-400"
+              className={styles.filterControl}
             >
               <option value="All">All Stages</option>
               <option value="Lead">Lead</option>
@@ -207,15 +210,16 @@ export default function LeadsPage() {
           </div>
 
           {/* Caller Filter (Available for Admin) */}
-          <div>
-            <label className="text-[11px] text-zinc-400 block mb-1">
+          <div className={styles.filterField}>
+            <label className={styles.filterLabel} htmlFor="lead-caller">
               Assigned Caller:
             </label>
             <select
+              id="lead-caller"
               disabled={userRole === "Caller"}
               value={userRole === "Caller" ? activeCallerName : callerFilter}
               onChange={(e) => setCallerFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700/80 text-white outline-none focus:border-amber-400 disabled:opacity-50"
+              className={styles.filterControl}
             >
               <option value="All">All Callers</option>
               {callerOptions.map((name) => (
@@ -227,12 +231,13 @@ export default function LeadsPage() {
           </div>
 
           {/* City Filter */}
-          <div>
-            <label className="text-[11px] text-zinc-400 block mb-1">City:</label>
+          <div className={styles.filterField}>
+            <label className={styles.filterLabel} htmlFor="lead-city">City:</label>
             <select
+              id="lead-city"
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700/80 text-white outline-none focus:border-amber-400"
+              className={styles.filterControl}
             >
               <option value="All">All Cities</option>
               {uniqueCities.map((city) => (
@@ -245,10 +250,10 @@ export default function LeadsPage() {
         </div>
 
         {/* Quick results count */}
-        <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-zinc-800/80">
+        <div className={styles.filterFooter}>
           <span>
-            Showing <strong className="text-white">{filteredLeads.length}</strong> of{" "}
-            <strong className="text-white">{leads.length}</strong> total leads
+            Showing <strong>{filteredLeads.length}</strong> of{" "}
+            <strong>{leads.length}</strong> total leads
           </span>
           {(searchTerm || stageFilter !== "All" || callerFilter !== "All" || cityFilter !== "All") && (
             <button
@@ -259,40 +264,40 @@ export default function LeadsPage() {
                 setCallerFilter("All");
                 setCityFilter("All");
               }}
-              className="text-amber-400 hover:underline"
+              className={styles.clearFilters}
             >
               Clear filters
             </button>
           )}
         </div>
-      </div>
+      </section>
 
       {/* Leads Table */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-zinc-300">
-            <thead className="bg-zinc-950/80 text-zinc-400 text-[11px] uppercase tracking-wider border-b border-zinc-800">
+      <section className={styles.tablePanel} aria-label="Lead directory">
+        <div className={styles.tableScroller}>
+          <table className={styles.table}>
+            <thead className={styles.tableHead}>
               <tr>
-                <th className="p-3.5">Business & Rating</th>
-                <th className="p-3.5">Contact Person</th>
-                <th className="p-3.5">Category & City</th>
-                <th className="p-3.5">Stage</th>
-                <th className="p-3.5">Assigned Caller</th>
-                <th className="p-3.5">Next Follow-up</th>
-                <th className="p-3.5 text-right">Actions</th>
+                <th scope="col">Business &amp; Rating</th>
+                <th scope="col">Contact Person</th>
+                <th scope="col">Category &amp; City</th>
+                <th scope="col">Stage</th>
+                <th scope="col">Assigned Caller</th>
+                <th scope="col">Next Follow-up</th>
+                <th scope="col" className={styles.actionsHeading}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/80">
+            <tbody>
               {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-zinc-800/40 transition">
+                <tr key={lead.id} className={styles.leadRow}>
                   {/* Business & Rating */}
-                  <td className="p-3.5">
-                    <div className="font-bold text-white text-sm">{lead.name}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
+                  <td className={styles.cell}>
+                    <div className={styles.businessName}>{lead.name}</div>
+                    <div className={styles.ratingLine}>
                       <span className="text-amber-400 font-bold flex items-center gap-0.5">
                         ★ {lead.googleRating}
                       </span>
-                      <span className="text-[10px] text-zinc-500">
+                      <span className={styles.reviews}>
                         ({lead.googleReviewsCount} reviews)
                       </span>
                       {lead.websiteUrl && (
@@ -300,9 +305,9 @@ export default function LeadsPage() {
                           href={lead.websiteUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[10px] text-blue-400 hover:underline"
+                          className={styles.externalLink}
                         >
-                          🌐 Web
+                          ◉ Web
                         </a>
                       )}
                       {lead.instagramUrl && (
@@ -310,21 +315,21 @@ export default function LeadsPage() {
                           href={lead.instagramUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[10px] text-pink-400 hover:underline"
+                          className={styles.instagramLink}
                         >
-                          📸 Insta
+                          ◎ Insta
                         </a>
                       )}
                     </div>
                   </td>
 
                   {/* Contact Person & Phone */}
-                  <td className="p-3.5">
-                    <div className="font-semibold text-zinc-200">
+                  <td className={styles.cell}>
+                    <div className={styles.contactName}>
                       {lead.contactPerson}
                     </div>
-                    <div className="text-zinc-400 text-[11px] mt-0.5 flex items-center gap-1.5 flex-wrap">
-                      <span>📞 {lead.phone}</span>
+                    <div className={styles.phoneLine}>
+                      <span><span className={styles.phoneIcon} aria-hidden="true">☎</span> {lead.phone}</span>
                       {lead.phone && (
                         <a
                           href={`https://wa.me/${lead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
@@ -332,7 +337,7 @@ export default function LeadsPage() {
                           )}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 hover:bg-emerald-800 text-[10px] font-semibold transition inline-flex items-center gap-0.5"
+                          className={styles.whatsappAction}
                           title="Message on WhatsApp"
                         >
                           <span>💬 WA</span>
@@ -342,26 +347,28 @@ export default function LeadsPage() {
                   </td>
 
                   {/* Category & City */}
-                  <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-zinc-300 border border-zinc-700 block w-fit mb-1">
+                  <td className={styles.cell}>
+                    <span className={styles.categoryBadge}>
                       {lead.category}
                     </span>
-                    <span className="text-zinc-400 text-[11px]">📍 {lead.city}</span>
+                    <span className={styles.cityName}><span aria-hidden="true">📍</span> {lead.city}</span>
                   </td>
 
                   {/* Pipeline Stage */}
-                  <td className="p-3.5">
+                  <td className={styles.cell}>
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase inline-block border ${
+                      className={`${styles.stageBadge} ${
                         lead.pipeline === "Won"
-                          ? "bg-emerald-950 text-emerald-300 border-emerald-700"
+                          ? styles.stageWon
                           : lead.pipeline === "Meeting Booked"
-                          ? "bg-cyan-950 text-cyan-300 border-cyan-700"
+                          ? styles.stageMeeting
                           : lead.pipeline === "Negotiation"
-                          ? "bg-amber-950 text-amber-300 border-amber-700"
+                          ? styles.stageNegotiation
                           : lead.pipeline === "Proposal"
-                          ? "bg-purple-950 text-purple-300 border-purple-700"
-                          : "bg-zinc-800 text-zinc-300 border-zinc-700"
+                          ? styles.stageProposal
+                          : lead.pipeline === "Contacted"
+                          ? styles.stageContacted
+                          : styles.stageLead
                       }`}
                     >
                       {lead.pipeline}
@@ -369,12 +376,12 @@ export default function LeadsPage() {
                   </td>
 
                   {/* Assigned Caller / Reassign */}
-                  <td className="p-3.5">
+                  <td className={styles.cell}>
                     {userRole === "Admin" ? (
                       <select
                         value={lead.assignedCaller}
                         onChange={(e) => reassignLead(lead.id, e.target.value)}
-                        className="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200 outline-none focus:border-amber-400"
+                        className={styles.callerSelect}
                       >
                         {callerOptions.map((name) => (
                           <option key={name} value={name}>
@@ -383,36 +390,36 @@ export default function LeadsPage() {
                         ))}
                       </select>
                     ) : (
-                      <span className="text-zinc-300 font-medium">
+                      <span className={styles.callerName}>
                         {lead.assignedCaller}
                       </span>
                     )}
                   </td>
 
                   {/* Next Follow-up */}
-                  <td className="p-3.5">
+                  <td className={styles.cell}>
                     {lead.followUpDate ? (
                       <div>
-                        <span className="text-zinc-200 font-semibold block">
+                        <span className={styles.followUpDate}>
                           {lead.followUpDate}
                         </span>
-                        <span className="text-[10px] text-zinc-400">
+                        <span className={styles.followUpTime}>
                           {lead.followUpTime || "12:00 PM"}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-zinc-500 italic">None set</span>
+                      <span className={styles.noFollowUp}>None set</span>
                     )}
                   </td>
 
                   {/* Actions */}
-                  <td className="p-3.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className={styles.cell}>
+                    <div className={styles.rowActions}>
                       <Link
                         href={`/calls/${lead.id}`}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition flex items-center gap-1 shadow-sm"
+                        className={styles.callAction}
                       >
-                        <span>📞</span>
+                        <span aria-hidden="true">☎</span>
                         <span>Call</span>
                       </Link>
 
@@ -420,10 +427,21 @@ export default function LeadsPage() {
                         <button
                           type="button"
                           onClick={() => deleteLead(lead.id)}
-                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition"
+                          className={styles.deleteAction}
+                          aria-label={`Delete ${lead.name}`}
                           title="Delete Lead"
                         >
-                          🗑️
+                          <svg
+                            aria-hidden="true"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M4 7h16M10 11v6M14 11v6M5.5 7l1 14h11l1-14M9 7V4h6v3" />
+                          </svg>
                         </button>
                       )}
                     </div>
@@ -434,12 +452,12 @@ export default function LeadsPage() {
           </table>
 
           {filteredLeads.length === 0 && (
-            <div className="p-12 text-center text-zinc-500 text-sm">
+            <div className={styles.emptyState}>
               No leads match your search criteria. Try modifying your filters or add a new lead.
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       {/* Add Lead Modal */}
       {showAddModal && (
@@ -465,7 +483,7 @@ export default function LeadsPage() {
                   placeholder="e.g. Royal Cafe & Lounge"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 />
               </div>
 
@@ -477,7 +495,7 @@ export default function LeadsPage() {
                     placeholder="Owner / Manager name"
                     value={formData.contactPerson}
                     onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
@@ -487,7 +505,7 @@ export default function LeadsPage() {
                     placeholder="+91 98..."
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
               </div>
@@ -500,7 +518,7 @@ export default function LeadsPage() {
                     placeholder="Mumbai, Delhi, Bengaluru..."
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
@@ -510,7 +528,7 @@ export default function LeadsPage() {
                     placeholder="Restaurant, Dental Clinic, Salon..."
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
               </div>
@@ -527,7 +545,7 @@ export default function LeadsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, googleRating: parseFloat(e.target.value) || 4.5 })
                     }
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
@@ -535,7 +553,7 @@ export default function LeadsPage() {
                   <select
                     value={formData.assignedCaller}
                     onChange={(e) => setFormData({ ...formData, assignedCaller: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   >
                     {callerOptions.map((name) => (
                       <option key={name} value={name}>
@@ -554,7 +572,7 @@ export default function LeadsPage() {
                     placeholder="https://..."
                     value={formData.websiteUrl}
                     onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
@@ -564,7 +582,7 @@ export default function LeadsPage() {
                     placeholder="https://instagram.com/..."
                     value={formData.instagramUrl}
                     onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                    className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                   />
                 </div>
               </div>
@@ -576,7 +594,7 @@ export default function LeadsPage() {
                   placeholder="Key background info about the business..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-amber-400"
+                  className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white outline-none focus:border-cyan-400"
                 ></textarea>
               </div>
 
@@ -590,7 +608,7 @@ export default function LeadsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold"
+                  className={styles.primaryAction}
                 >
                   Save Lead
                 </button>
@@ -635,7 +653,7 @@ export default function LeadsPage() {
                   placeholder={`Business Name,Contact Person,Phone,City,Category,Rating\nGolden Spoon Cafe,Rajesh Gupta,+91 9811223344,Mumbai,Cafe,4.6\nApex Ortho Clinic,Dr. Anjali Rao,+91 9922334455,Delhi,Clinic,4.9`}
                   value={csvInput}
                   onChange={(e) => setCsvInput(e.target.value)}
-                  className="w-full p-3 font-mono text-[11px] bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-200 outline-none focus:border-amber-400"
+                  className="w-full p-3 font-mono text-[11px] bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-200 outline-none focus:border-cyan-400"
                 ></textarea>
 
                 <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
@@ -648,7 +666,7 @@ export default function LeadsPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold"
+                    className={styles.primaryAction}
                   >
                     Import Leads
                   </button>
@@ -658,6 +676,6 @@ export default function LeadsPage() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
