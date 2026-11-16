@@ -111,8 +111,8 @@ export default function ForgotPasswordPage() {
   return (
     <AuthCard>
       <div className="mb-7">
-        <h1 className="text-2xl font-bold text-white">Forgot Password?</h1>
-        <p className="mt-2 text-sm leading-6 text-zinc-400">
+        <h1 className="text-2xl font-black bg-gradient-to-r from-white via-[#E5E4E2] to-[#AEB5BF] bg-clip-text text-transparent tracking-tight">Forgot Password?</h1>
+        <p className="mt-2 text-sm leading-6 text-[#AEB5BF]">
           Enter your registered email address. We&apos;ll send you a link to
           reset your password.
         </p>
@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
 
       {message && (
         <p
-          className="mb-5 rounded-lg border border-emerald-900/80 bg-emerald-950/40 px-4 py-3 text-sm text-emerald-200"
+          className="mb-5 rounded-xl border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-200 shadow-sm"
           role="status"
         >
           {message}
@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
       )}
       {error && (
         <p
-          className="mb-5 rounded-lg border border-red-900/80 bg-red-950/50 px-4 py-3 text-sm text-red-300"
+          className="mb-5 rounded-xl border border-red-800/80 bg-red-950/60 px-4 py-3 text-sm text-red-300 shadow-sm"
           role="alert"
         >
           {error}
@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
         <div>
           <label
             htmlFor="email"
-            className="mb-2 block text-sm font-medium text-zinc-300"
+            className="mb-2 block text-xs font-semibold text-[#E5E4E2]"
           >
             Email address
           </label>
@@ -152,7 +152,7 @@ export default function ForgotPasswordPage() {
             disabled={Boolean(message)}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3.5 py-3 text-sm text-white outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-400/20 disabled:opacity-60"
+            className="w-full rounded-xl border border-[#717985]/40 bg-[#161b24]/95 px-3.5 py-3 text-sm text-white placeholder-slate-400 outline-none transition-all focus:border-[#C0C0C0] focus:ring-1 focus:ring-[#C0C0C0]/40 shadow-inner disabled:opacity-60"
             placeholder="you@example.com"
           />
         </div>
@@ -160,7 +160,7 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={isSubmitting || Boolean(message)}
-          className="w-full rounded-lg bg-slate-200 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl bg-gradient-to-r from-[#ffffff] via-[#E5E4E2] to-[#AEB5BF] hover:from-[#ffffff] hover:to-[#d4d4d8] px-4 py-3 text-sm font-black text-slate-950 transition-all shadow-[0_4px_20px_rgba(255,255,255,0.25),inset_0_1px_1.5px_rgba(255,255,255,0.8)] hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
         >
           {isSubmitting ? "Sending..." : "Send Reset Link"}
         </button>
@@ -170,9 +170,9 @@ export default function ForgotPasswordPage() {
         <Link
           href="/"
           onClick={resetForm}
-          className="font-medium text-slate-300 transition hover:text-white"
+          className="font-medium text-[#AEB5BF] transition hover:text-white"
         >
-          Back to Login
+          ← Back to Login
         </Link>
       </p>
     </AuthCard>
