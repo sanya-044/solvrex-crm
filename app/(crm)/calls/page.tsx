@@ -34,7 +34,7 @@ export default function CallLogsPage() {
 
         <Link
           href="/calls/1"
-          className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition transform hover:scale-[1.02]"
+          className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg shadow-emerald-500/25 transition transform hover:scale-[1.02]"
         >
           <span>📞</span>
           <span>Start Live Call Workspace</span>
@@ -59,8 +59,8 @@ export default function CallLogsPage() {
             onClick={() => setFilterOutcome(outcome)}
             className={`px-3 py-1.5 rounded-xl font-medium transition ${
               filterOutcome === outcome
-                ? "bg-amber-400 text-black font-bold shadow"
-                : "bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white font-bold shadow-[0_0_14px_rgba(8,199,233,0.4)] border border-cyan-400/50"
+                : "bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-700"
             }`}
           >
             {outcome}
@@ -90,7 +90,7 @@ export default function CallLogsPage() {
                   <td className="p-3.5 font-bold text-white text-sm">
                     <Link
                       href={`/calls/${call.leadId}`}
-                      className="hover:text-amber-400 hover:underline"
+                      className="hover:text-cyan-400 transition hover:underline"
                     >
                       {call.leadName}
                     </Link>
@@ -98,7 +98,7 @@ export default function CallLogsPage() {
 
                   {/* Caller */}
                   <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 text-[11px]">
+                    <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700/80 text-[11px]">
                       {call.callerName}
                     </span>
                   </td>
@@ -113,14 +113,14 @@ export default function CallLogsPage() {
                     <span
                       className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase inline-block border ${
                         call.outcome === "Won"
-                          ? "bg-emerald-950 text-emerald-300 border-emerald-700"
+                          ? "bg-emerald-950/80 text-emerald-300 border-emerald-700/70 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
                           : call.outcome === "Meeting booked"
-                          ? "bg-cyan-950 text-cyan-300 border-cyan-700"
+                          ? "bg-cyan-950/80 text-cyan-300 border-cyan-700/70 shadow-[0_0_8px_rgba(8,199,233,0.2)]"
                           : call.outcome === "Interested"
-                          ? "bg-blue-950 text-blue-300 border-blue-700"
+                          ? "bg-blue-950/80 text-blue-300 border-blue-700/70 shadow-[0_0_8px_rgba(59,130,246,0.2)]"
                           : call.outcome === "Call back"
-                          ? "bg-purple-950 text-purple-300 border-purple-700"
-                          : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                          ? "bg-purple-950/80 text-purple-300 border-purple-700/70 shadow-[0_0_8px_rgba(168,85,247,0.2)]"
+                          : "bg-zinc-800/80 text-zinc-400 border-zinc-700"
                       }`}
                     >
                       {call.outcome}
@@ -135,7 +135,7 @@ export default function CallLogsPage() {
                   {/* Audio Player */}
                   <td className="p-3.5 min-w-[220px]">
                     {call.recordingUrl ? (
-                      <div className="flex items-center gap-2 bg-zinc-950 p-2 rounded-xl border border-zinc-800">
+                      <div className="flex items-center gap-2 bg-zinc-950 p-2 rounded-xl border border-zinc-850">
                         <button
                           type="button"
                           onClick={() => {
@@ -145,7 +145,7 @@ export default function CallLogsPage() {
                               setPlayingAudioId(call.id);
                             }
                           }}
-                          className="w-7 h-7 rounded-full bg-amber-400 hover:bg-amber-300 text-black flex items-center justify-center font-bold text-xs shrink-0 shadow"
+                          className="w-7 h-7 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 flex items-center justify-center font-bold text-xs shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.3)] transition"
                         >
                           {playingAudioId === call.id ? "⏸" : "▶"}
                         </button>

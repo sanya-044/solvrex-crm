@@ -1,0 +1,129 @@
+.page {
+  --call-ink: #f3f6fa;
+  --call-cyan: #08c7e9;
+  color: var(--call-ink);
+}
+
+.page :global([class~="bg-zinc-900"]),
+.page :global([class~="bg-zinc-900/90"]),
+.page :global([class~="bg-zinc-900/80"]) {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.018) 0,
+      rgba(255, 255, 255, 0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(112deg, #1a2029 0%, #343b44 23%, #222933 48%, #383e47 68%, #171d26 100%);
+}
+
+.page :global([class~="bg-zinc-950"]),
+.page :global([class~="bg-zinc-950/70"]) {
+  background:
+    linear-gradient(110deg, rgba(120, 134, 148, 0.08), transparent 36%, rgba(196, 209, 222, 0.05) 62%, transparent 82%),
+    linear-gradient(180deg, #111821 0%, #0b1119 100%);
+}
+
+.page :global([class~="bg-zinc-800"]),
+.page :global([class~="bg-zinc-800/60"]) {
+  background: linear-gradient(180deg, #353d47 0%, #252d36 100%);
+}
+
+.page :global([class~="hover:bg-zinc-800"]):hover,
+.page :global([class~="disabled:hover:bg-zinc-800"]:disabled:hover) {
+  background: linear-gradient(180deg, #414a55 0%, #303943 100%);
+}
+
+.page :global([class~="hover:bg-zinc-700"]):hover,
+.page :global([class~="hover:bg-zinc-750"]):hover {
+  background: linear-gradient(180deg, #4a535e 0%, #353e48 100%);
+}
+
+.page :global([class~="border-zinc-800"]),
+.page :global([class~="border-zinc-800/90"]),
+.page :global([class~="border-zinc-800/80"]) {
+  border-color: rgba(183, 197, 211, 0.32);
+}
+
+.page :global([class~="border-zinc-700"]) {
+  border-color: rgba(174, 188, 203, 0.42);
+}
+
+.page :global([class~="text-white"]) {
+  color: #f8fafc;
+}
+
+.page :global([class~="text-zinc-200"]),
+.page :global([class~="text-zinc-300"]) {
+  color: #dce3ea;
+}
+
+.page :global([class~="text-zinc-400"]),
+.page :global([class~="text-zinc-500"]) {
+  color: #a7b1be;
+}
+
+.page :global([class~="text-zinc-600"]) {
+  color: #8793a1;
+}
+
+.page :global([class~="text-amber-300"]),
+.page :global([class~="text-amber-400"]) {
+  color: #65d8ff;
+}
+
+.page :global([class~="text-blue-400"]) {
+  color: #65d8ff;
+}
+
+.page :global([class~="border-amber-500"]),
+.page :global([class~="border-amber-500/20"]),
+.page :global([class~="border-amber-400/30"]) {
+  border-color: rgba(8, 199, 233, 0.52);
+}
+
+.page :global([class*="ring-amber-400"]) {
+  --tw-ring-color: rgba(8, 199, 233, 0.34);
+}
+
+.page :global([class~="bg-amber-400"]) {
+  background: linear-gradient(180deg, #1ce2ca, #05b9bb);
+  color: #061416;
+}
+
+.page :global([class~="bg-amber-400/10"]),
+.page :global([class~="bg-amber-500/10"]) {
+  background: rgba(8, 199, 233, 0.1);
+}
+
+.page :global([class~="bg-amber-300"]) {
+  background: linear-gradient(180deg, #4bf1d7, #11cdbd);
+  color: #061416;
+}
+
+.page :global([class~="hover:bg-amber-300"]):hover {
+  background: linear-gradient(180deg, #4bf1d7, #11cdbd);
+  color: #061416;
+}
+
+.page :global([class*="from-amber-400"]) {
+  background-image: linear-gradient(90deg, #1ce2ca, #05b9bb);
+}
+
+.page :global([class*="hover:from-amber-300"]):hover {
+  background-image: linear-gradient(90deg, #4bf1d7, #11cdbd);
+}
+
+.page :global([class*="focus:border-amber-400"]):focus {
+  border-color: var(--call-cyan);
+  box-shadow: 0 0 0 3px rgba(8, 199, 233, 0.2);
+}
+
+.page :global(button:focus-visible),
+.page :global(a:focus-visible),
+.page :global(input:focus-visible),
+.page :global(textarea:focus-visible) {
+  outline: 2px solid #65e9ff;
+  outline-offset: 3px;
+}

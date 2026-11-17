@@ -24,6 +24,7 @@ interface AuthContextValue {
   isLoading: boolean;
   authError: string | null;
   login: (email: string, password: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string, role?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -141,6 +142,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authenticatedUser);
   }, []);
 
+  const register = useCallback(
+    async (fullName: string, email: string, password: string, role?: string) => {
+      setAuthError(null);
+
+      let response: Response;
+      try {
+        response = await fetch("/api/auth/register", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName, email, password, role }),
+        });
+      } catch {
+        throw new Error("Unable to connect. Please try again.");
+      }
+
+      let responseBody: unknown = null;
+      try {
+        responseBody = await response.json();
+      } catch {
+        if (response.ok) {
+          throw new Error("Unable to sign up. Please try again.");
+        }
+      }
+
+      if (!response.ok) {
+        const backendMessage = getResponseMessage(responseBody);
+        if (response.status < 500 && backendMessage) {
+          throw new Error(backendMessage);
+        }
+        throw new Error("Unable to create account. Please try again.");
+      }
+
+      const authenticatedUser = getUser(responseBody);
+      if (!authenticatedUser) {
+        throw new Error("Account created, please sign in.");
+      }
+
+      setUser(authenticatedUser);
+    },
+    [],
+  );
+
   const logout = useCallback(async () => {
     let failureMessage: string | null = null;
     try {
@@ -177,9 +221,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       authError,
       login,
+      register,
       logout,
     }),
-    [user, isLoading, authError, login, logout],
+    [user, isLoading, authError, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

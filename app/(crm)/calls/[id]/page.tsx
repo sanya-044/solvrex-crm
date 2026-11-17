@@ -10,6 +10,7 @@ import {
 } from "@/context/CRMContent";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import styles from "./calls.module.css";
 
 export default function CallWorkspacePage({
   params,
@@ -268,7 +269,7 @@ export default function CallWorkspacePage({
   }
 
   return (
-    <div className="max-w-[1500px] mx-auto space-y-4 pb-10">
+    <div className={`${styles.page} max-w-[1500px] mx-auto space-y-4 pb-10`}>
       {/* Top Calling HUD & Navigation Bar */}
       <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800/90 rounded-2xl p-4 shadow-lg shadow-black/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Left: Queue Status & Navigation */}
