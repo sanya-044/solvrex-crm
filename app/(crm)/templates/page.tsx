@@ -50,7 +50,7 @@ export default function TemplatesPage() {
               onClick={() => setLangFilter(l)}
               className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                 langFilter === l
-                  ? "bg-amber-400 text-black shadow"
+                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold shadow-[0_0_12px_rgba(8,199,233,0.35)] border border-cyan-400/50"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -67,7 +67,7 @@ export default function TemplatesPage() {
           onClick={() => setActiveTab("whatsapp")}
           className={`pb-3 px-4 text-sm font-bold border-b-2 transition ${
             activeTab === "whatsapp"
-              ? "border-amber-400 text-amber-300"
+              ? "border-cyan-400 text-cyan-300 drop-shadow-[0_0_8px_rgba(8,199,233,0.4)]"
               : "border-transparent text-zinc-400 hover:text-white"
           }`}
         >
@@ -78,7 +78,7 @@ export default function TemplatesPage() {
           onClick={() => setActiveTab("scripts")}
           className={`pb-3 px-4 text-sm font-bold border-b-2 transition ${
             activeTab === "scripts"
-              ? "border-amber-400 text-amber-300"
+              ? "border-cyan-400 text-cyan-300 drop-shadow-[0_0_8px_rgba(8,199,233,0.4)]"
               : "border-transparent text-zinc-400 hover:text-white"
           }`}
         >
@@ -118,7 +118,7 @@ export default function TemplatesPage() {
                   <button
                     type="button"
                     onClick={() => handleCopy(t)}
-                    className="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs border border-zinc-700 transition flex items-center justify-center gap-1.5 shadow-sm"
+                    className="flex-1 py-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-750 text-white font-semibold text-xs border border-zinc-700/80 transition flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <span>{isCopied ? "✓" : "📋"}</span>
                     <span>{isCopied ? "Copied to Clipboard!" : "Copy Template"}</span>
@@ -128,7 +128,7 @@ export default function TemplatesPage() {
                     href={`https://wa.me/?text=${encodeURIComponent(t.content)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                    className="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-[0_2px_10px_rgba(16,185,129,0.3)]"
                   >
                     <span>💬</span>
                     <span>Test in WhatsApp</span>
@@ -149,7 +149,7 @@ export default function TemplatesPage() {
               className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-3"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-amber-300">{s.title}</h3>
+                <h3 className="text-sm font-bold text-cyan-300 drop-shadow-[0_0_6px_rgba(8,199,233,0.3)]">{s.title}</h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-bold uppercase">
                   {s.category}
                 </span>

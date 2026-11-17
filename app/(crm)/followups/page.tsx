@@ -61,7 +61,7 @@ export default function FollowupsPage() {
 
         <Link
           href="/calls/1"
-          className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition transform hover:scale-[1.02]"
+          className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg shadow-emerald-500/25 transition transform hover:scale-[1.02]"
         >
           <span>⚡</span>
           <span>Start Queue Speed-Dial</span>
@@ -75,7 +75,7 @@ export default function FollowupsPage() {
           onClick={() => setActiveTab("today")}
           className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 ${
             activeTab === "today"
-              ? "bg-amber-400 text-black shadow"
+              ? "bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(8,199,233,0.35)] border border-cyan-400/50"
               : "text-zinc-400 hover:text-white"
           }`}
         >
@@ -88,7 +88,7 @@ export default function FollowupsPage() {
           onClick={() => setActiveTab("overdue")}
           className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 ${
             activeTab === "overdue"
-              ? "bg-rose-500 text-white shadow"
+              ? "bg-rose-500/20 text-rose-300 border border-rose-500/60 shadow-[0_0_12px_rgba(244,63,94,0.3)]"
               : "text-zinc-400 hover:text-white"
           }`}
         >
@@ -101,7 +101,7 @@ export default function FollowupsPage() {
           onClick={() => setActiveTab("high")}
           className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 ${
             activeTab === "high"
-              ? "bg-red-500 text-white shadow"
+              ? "bg-red-500/20 text-red-300 border border-red-500/60 shadow-[0_0_12px_rgba(239,68,68,0.3)]"
               : "text-zinc-400 hover:text-white"
           }`}
         >
@@ -114,7 +114,7 @@ export default function FollowupsPage() {
           onClick={() => setActiveTab("all")}
           className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 ${
             activeTab === "all"
-              ? "bg-zinc-800 text-white"
+              ? "bg-zinc-800 text-white border border-slate-600"
               : "text-zinc-400 hover:text-white"
           }`}
         >
@@ -139,12 +139,12 @@ export default function FollowupsPage() {
                   </p>
                 </div>
                 <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0 border ${
+                  className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase shrink-0 border ${
                     lead.priority === "High"
-                      ? "bg-red-950/70 text-red-300 border-red-800"
+                      ? "bg-red-950/70 text-red-300 border-red-700/60 shadow-[0_0_8px_rgba(239,68,68,0.2)]"
                       : lead.priority === "Medium"
-                      ? "bg-amber-950/70 text-amber-300 border-amber-800"
-                      : "bg-blue-950/70 text-blue-300 border-blue-800"
+                      ? "bg-amber-950/70 text-amber-300 border-amber-700/60"
+                      : "bg-cyan-950/70 text-cyan-300 border-cyan-700/60 shadow-[0_0_8px_rgba(8,199,233,0.15)]"
                   }`}
                 >
                   {lead.priority || "Medium"} Priority
@@ -157,7 +157,7 @@ export default function FollowupsPage() {
                   <span>📅</span>
                   <span className="font-semibold">{lead.followUpDate}</span>
                 </span>
-                <span className="text-amber-400 font-mono font-bold">
+                <span className="text-cyan-400 font-mono font-bold">
                   ⏰ {lead.followUpTime || "12:00 PM"}
                 </span>
               </div>
@@ -172,7 +172,7 @@ export default function FollowupsPage() {
             <div className="pt-3 border-t border-zinc-800 flex items-center gap-2">
               <Link
                 href={`/calls/${lead.id}`}
-                className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition shadow-sm"
+                className="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition shadow-[0_2px_10px_rgba(16,185,129,0.3)]"
               >
                 <span>📞 Call Now</span>
               </Link>
@@ -184,7 +184,7 @@ export default function FollowupsPage() {
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition flex items-center justify-center"
+                  className="px-3 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400/60 text-xs font-semibold transition flex items-center justify-center shadow-[0_0_8px_rgba(16,185,129,0.2)]"
                   title="Chat on WhatsApp"
                 >
                   💬
@@ -194,7 +194,7 @@ export default function FollowupsPage() {
               <button
                 type="button"
                 onClick={() => updateLead(lead.id, { followUpDate: "" })}
-                className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition"
+                className="px-3 py-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-750 text-zinc-300 hover:text-white border border-zinc-700/80 text-xs font-semibold transition"
                 title="Mark Completed"
               >
                 ✓ Done
